@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Happy Birthday! 🎂</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@400;600;800&family=Great+Vibes&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- AUDIO (birthday tune) -->
+  <audio id="bgMusic" loop>
+    <source src="https://www.soundjay.com/human/sounds/applause-01.mp3" type="audio/mpeg"/>
+  </audio>
+
+  <!-- SCREEN 1: Magic Envelope Intro -->
+  <div class="intro" id="intro">
+    <div class="stars-bg" id="starsBg"></div>
+    <div class="shooting-stars" id="shootingStars"></div>
+    <div class="intro-content">
+      <div class="magic-text">You have a special surprise</div>
+      <div class="envelope-wrap" id="envelopeWrap">
+        <div class="envelope" id="envelope">
+          <div class="envelope-flap" id="envelopeFlap"></div>
+          <div class="envelope-body">
+            <div class="envelope-heart">💌</div>
+          </div>
+          <div class="envelope-letter" id="envelopeLetter">
+            <p>A birthday wish<br/>just for you...</p>
+          </div>
+        </div>
+      </div>
+      <p class="intro-hint animate-pulse">Tap the envelope</p>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: Name Input (Romantic/Dreamy) -->
+  <div class="screen screen-name hidden" id="screenName">
+    <canvas id="heartCanvas"></canvas>
+    <div class="name-content">
+      <div class="floating-hearts" id="floatingHearts"></div>
+      <div class="crown-emoji">👑</div>
+      <h2 class="ask-name">Kiska birthday hai?</h2>
+      <p class="ask-sub">Enter the name of your special person</p>
+      <div class="input-glass">
+        <input type="text" id="nameInput" placeholder="Type their name..." maxlength="20" autocomplete="off" spellcheck="false"/>
+        <button id="nameBtn">
+          <span>Celebrate</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: Main Birthday Experience -->
+  <div class="screen screen-main hidden" id="screenMain">
+    <canvas id="fireworks"></canvas>
+    <div id="particles"></div>
+
+    <div class="main-scroll">
+
+      <!-- Hero Section -->
+      <section class="hero-section" id="heroSection">
+        <div class="hero-bg-circles"></div>
+        <div class="countdown-burst" id="countdownBurst">
+          <span class="count-num" id="countNum">3</span>
+        </div>
+        <div class="hero-reveal hidden" id="heroReveal">
+          <div class="crown-float">👑</div>
+          <h1 class="mega-title" id="megaTitle">Happy Birthday!</h1>
+          <p class="mega-sub" id="megaSub"></p>
+          <div class="sparkle-divider">
+            <span>✦</span><span>✦</span><span>✦</span>
+          </div>
+        </div>
+
+        <!-- Birthday Quote that appears with fireworks (OUTSIDE heroReveal) -->
+        <div class="bday-quote" id="bdayQuote" style="display:none;">
+          <div class="quote-glow"></div>
+          <span class="quote-icon">🎆</span>
+          <div class="quote-text-wrap">
+            <span class="quote-text" id="quoteText"></span>
+          </div>
+          <span class="quote-author" id="quoteAuthor"></span>
+        </div>
+        <div class="scroll-hint" id="scrollHint" style="display:none;">
+          <span>Scroll down for more</span>
+          <div class="scroll-arrow">↓</div>
+        </div>
+      </section>
+
+      <!-- Cake Section -->
+      <section class="cake-section" id="cakeSection">
+        <div class="section-label">🎂 Your Birthday Cake</div>
+        <div class="cake-stage">
+          <div class="cake-glow"></div>
+          <div class="cake" id="cake">
+            <div class="candles" id="candleRow"></div>
+            <div class="cake-tier tier-1">
+              <div class="frosting-drip"></div>
+              <div class="tier-deco">✿ ✿ ✿</div>
+            </div>
+            <div class="cake-tier tier-2">
+              <div class="tier-deco">♥ ♥ ♥ ♥</div>
+            </div>
+            <div class="cake-tier tier-3">
+              <div class="tier-deco" id="cakeName">Happy Birthday</div>
+            </div>
+            <div class="cake-base"></div>
+          </div>
+        </div>
+        <button class="blow-btn" id="blowBtn">
+          <span class="blow-icon">🌬️</span>
+          <span>Blow the Candles!</span>
+        </button>
+        <div class="wish-reveal hidden" id="wishReveal">
+          <div class="wish-stars">⭐</div>
+          <p class="wish-text">Close your eyes... Make a wish...</p>
+          <p class="wish-text2">It's already coming true! ✨</p>
+        </div>
+      </section>
+
+      <!-- Letter / Message Section -->
+      <section class="letter-section" id="letterSection">
+        <div class="section-label">💌 A Special Message</div>
+        <div class="letter-paper" id="letterPaper">
+          <div class="letter-stamp">♥</div>
+          <p class="letter-greeting" id="letterGreeting">Dear Friend,</p>
+          <div class="typewriter" id="typewriter"></div>
+          <p class="letter-sign">With all my love ♥</p>
+        </div>
+      </section>
+
+      <!-- Wishes Gallery -->
+      <section class="wishes-section">
+        <div class="section-label">🎁 Birthday Wishes</div>
+        <div class="wishes-track" id="wishesTrack"></div>
+      </section>
+
+      <!-- Photo Memory Wall -->
+      <section class="memory-section">
+        <div class="section-label">🌟 Celebrating You</div>
+        <div class="memory-grid" id="memoryGrid"></div>
+      </section>
+
+      <!-- Age Section -->
+      <section class="age-section">
+        <div class="section-label">🎈 How old are you turning?</div>
+        <div class="age-ring">
+          <button class="age-ctrl" id="ageDown">−</button>
+          <div class="age-center">
+            <span class="age-num" id="ageDisplay">1</span>
+            <span class="age-word">years young!</span>
+          </div>
+          <button class="age-ctrl" id="ageUp">+</button>
+        </div>
+        <p class="age-msg" id="ageFun"></p>
+        <div class="age-candles" id="ageCandles"></div>
+      </section>
+
+      <!-- Music Toggle -->
+      <div class="music-float" id="musicToggle">
+        <span>🎵</span>
+      </div>
+
+      <!-- Final Wish -->
+      <section class="final-section">
+        <div class="final-wrap">
+          <p class="final-text">May this year bring you</p>
+          <div class="rotating-words" id="rotatingWords">
+            <span class="rw active">endless happiness 💛</span>
+            <span class="rw">beautiful adventures 🌍</span>
+            <span class="rw">tons of love 💖</span>
+            <span class="rw">amazing surprises 🎁</span>
+            <span class="rw">all your dreams ✨</span>
+          </div>
+          <button class="share-btn" id="shareBtn">📸 Screenshot & Share!</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
