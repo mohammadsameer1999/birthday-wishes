@@ -2,65 +2,80 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Happy Birthday! 🎂</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Happy Birthday 💕</title>
   <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@400;600;800&family=Great+Vibes&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Poppins:wght@300;400;600;800&family=Great+Vibes&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet"/>
 </head>
 <body>
 
-  <!-- AUDIO (birthday tune) -->
+  <!-- Cursor sparkle trail (desktop) -->
+  <div id="cursorTrail"></div>
+
+  <!-- Background Music -->
   <audio id="bgMusic" loop>
     <source src="https://www.soundjay.com/human/sounds/applause-01.mp3" type="audio/mpeg"/>
   </audio>
 
-  <!-- SCREEN 1: Magic Envelope Intro -->
+  <!-- ============================================
+       SCREEN 1 — CINEMATIC INTRO
+       ============================================ -->
   <div class="intro" id="intro">
-    <div class="stars-bg" id="starsBg"></div>
-    <div class="shooting-stars" id="shootingStars"></div>
+    <canvas id="nebulaCanvas"></canvas>
+    <div class="rose-petals" id="rosePetals"></div>
     <div class="intro-content">
-      <div class="magic-text">You have a special surprise</div>
+      <div class="magic-text">Someone special sent you something...</div>
       <div class="envelope-wrap" id="envelopeWrap">
-        <div class="envelope" id="envelope">
-          <div class="envelope-flap" id="envelopeFlap"></div>
-          <div class="envelope-body">
-            <div class="envelope-heart">💌</div>
-          </div>
-          <div class="envelope-letter" id="envelopeLetter">
-            <p>A birthday wish<br/>just for you...</p>
+        <div class="envelope-3d" id="envelope3d">
+          <div class="envelope" id="envelope">
+            <div class="envelope-flap" id="envelopeFlap"></div>
+            <div class="envelope-body">
+              <div class="envelope-heart">💌</div>
+            </div>
+            <div class="envelope-letter" id="envelopeLetter">
+              <p>A birthday wish<br/>made with love...</p>
+            </div>
           </div>
         </div>
+        <div class="envelope-glow-ring"></div>
+        <div class="envelope-glow-ring ring-2"></div>
       </div>
-      <p class="intro-hint animate-pulse">Tap the envelope</p>
+      <p class="intro-hint animate-pulse">Tap the envelope 💕</p>
     </div>
   </div>
 
-  <!-- SCREEN 2: Name Input (Romantic/Dreamy) -->
+  <!-- ============================================
+       SCREEN 2 — NAME INPUT (Romantic)
+       ============================================ -->
   <div class="screen screen-name hidden" id="screenName">
     <canvas id="heartCanvas"></canvas>
+    <div class="mesh-gradient-bg"></div>
     <div class="name-content">
       <div class="floating-hearts" id="floatingHearts"></div>
       <div class="crown-emoji">👑</div>
-      <h2 class="ask-name">Kiska birthday hai?</h2>
-      <p class="ask-sub">Enter the name of your special person</p>
+      <h2 class="ask-name">Who holds your heart?</h2>
+      <p class="ask-sub">Enter their name and watch the magic unfold</p>
       <div class="input-glass">
         <input type="text" id="nameInput" placeholder="Type their name..." maxlength="20" autocomplete="off" spellcheck="false"/>
         <button id="nameBtn">
-          <span>Celebrate</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <span>Begin the Magic ✨</span>
         </button>
       </div>
     </div>
   </div>
 
-  <!-- SCREEN 3: Main Birthday Experience -->
+  <!-- ============================================
+       SCREEN 3 — MAIN BIRTHDAY EXPERIENCE
+       ============================================ -->
   <div class="screen screen-main hidden" id="screenMain">
     <canvas id="fireworks"></canvas>
     <div id="particles"></div>
+    <div class="animated-mesh-bg" id="meshBg"></div>
 
-    <div class="main-scroll">
+    <div class="emoji-rain-layer" id="emojiRainLayer"></div>
+    <div class="main-scroll" id="mainScroll">
 
-      <!-- Hero Section -->
+      <!-- ===== HERO ===== -->
       <section class="hero-section" id="heroSection">
         <div class="hero-bg-circles"></div>
         <div class="countdown-burst" id="countdownBurst">
@@ -68,52 +83,70 @@
         </div>
         <div class="hero-reveal hidden" id="heroReveal">
           <div class="crown-float">👑</div>
-          <h1 class="mega-title" id="megaTitle">Happy Birthday!</h1>
+          <h1 class="mega-title" id="megaTitle"></h1>
           <p class="mega-sub" id="megaSub"></p>
           <div class="sparkle-divider">
-            <span>✦</span><span>✦</span><span>✦</span>
+            <span>✦</span><span>💕</span><span>✦</span>
           </div>
         </div>
 
-        <!-- Birthday Quote that appears with fireworks (OUTSIDE heroReveal) -->
         <div class="bday-quote" id="bdayQuote" style="display:none;">
           <div class="quote-glow"></div>
-          <span class="quote-icon">🎆</span>
+          <span class="quote-icon">🌹</span>
           <div class="quote-text-wrap">
             <span class="quote-text" id="quoteText"></span>
           </div>
           <span class="quote-author" id="quoteAuthor"></span>
         </div>
         <div class="scroll-hint" id="scrollHint" style="display:none;">
-          <span>Scroll down for more</span>
+          <span>Scroll down for more surprises</span>
           <div class="scroll-arrow">↓</div>
         </div>
       </section>
 
-      <!-- Cake Section -->
+      <!-- ===== LOVE TIMELINE (NEW!) ===== -->
+      <section class="love-section" id="loveSection">
+        <div class="section-label"><span class="label-icon">💕</span> Why You're So Special</div>
+        <div class="love-timeline" id="loveTimeline"></div>
+      </section>
+
+      <!-- ===== CAKE ===== -->
       <section class="cake-section" id="cakeSection">
-        <div class="section-label">🎂 Your Birthday Cake</div>
+        <div class="section-label"><span class="label-icon">🎂</span> Your Birthday Cake</div>
         <div class="cake-stage">
           <div class="cake-glow"></div>
-          <div class="cake" id="cake">
-            <div class="candles" id="candleRow"></div>
-            <div class="cake-tier tier-1">
-              <div class="frosting-drip"></div>
-              <div class="tier-deco">✿ ✿ ✿</div>
+          <div class="cake-3d-wrap">
+            <div class="cake" id="cake">
+              <div class="cake-cherry">🍒</div>
+              <div class="candles" id="candleRow"></div>
+              <div class="cake-tier tier-1">
+                <div class="frosting-drip"></div>
+                <div class="tier-shine"></div>
+                <div class="tier-deco">✿ ✿ ✿</div>
+              </div>
+              <div class="cake-tier tier-2">
+                <div class="tier-shine"></div>
+                <div class="tier-deco">♥ ♥ ♥ ♥</div>
+              </div>
+              <div class="cake-tier tier-3">
+                <div class="tier-shine"></div>
+                <div class="tier-deco" id="cakeName">Happy Birthday</div>
+              </div>
+              <div class="cake-base"></div>
             </div>
-            <div class="cake-tier tier-2">
-              <div class="tier-deco">♥ ♥ ♥ ♥</div>
-            </div>
-            <div class="cake-tier tier-3">
-              <div class="tier-deco" id="cakeName">Happy Birthday</div>
-            </div>
-            <div class="cake-base"></div>
           </div>
         </div>
-        <button class="blow-btn" id="blowBtn">
-          <span class="blow-icon">🌬️</span>
-          <span>Blow the Candles!</span>
-        </button>
+        <div class="blow-buttons">
+          <button class="blow-btn" id="blowBtn">
+            <span class="blow-icon">🌬️</span>
+            <span>Blow the Candles</span>
+          </button>
+          <button class="blow-btn mic-btn" id="micBlowBtn">
+            <span class="blow-icon">🎤</span>
+            <span>Blow with Mic!</span>
+          </button>
+        </div>
+        <p class="mic-status" id="micStatus"></p>
         <div class="wish-reveal hidden" id="wishReveal">
           <div class="wish-stars">⭐</div>
           <p class="wish-text">Close your eyes... Make a wish...</p>
@@ -121,32 +154,45 @@
         </div>
       </section>
 
-      <!-- Letter / Message Section -->
-      <section class="letter-section" id="letterSection">
-        <div class="section-label">💌 A Special Message</div>
-        <div class="letter-paper" id="letterPaper">
-          <div class="letter-stamp">♥</div>
-          <p class="letter-greeting" id="letterGreeting">Dear Friend,</p>
-          <div class="typewriter" id="typewriter"></div>
-          <p class="letter-sign">With all my love ♥</p>
+      <!-- ===== BIRTHDAY SONG ===== -->
+      <section class="song-section" id="songSection">
+        <div class="section-label"><span class="label-icon">🎶</span> A Song For You</div>
+        <div class="song-card">
+          <div class="song-visualizer" id="songVisualizer"></div>
+          <div class="song-notes" id="songNotes"></div>
+          <div class="song-lyrics" id="songLyrics"></div>
+          <button class="song-replay-btn" id="songReplay">🔄 Play Again</button>
         </div>
       </section>
 
-      <!-- Wishes Gallery -->
+      <!-- ===== LOVE LETTER ===== -->
+      <section class="letter-section" id="letterSection">
+        <div class="section-label"><span class="label-icon">💌</span> A Letter From My Heart</div>
+        <div class="letter-paper" id="letterPaper">
+          <div class="letter-petals" id="letterPetals"></div>
+          <div class="letter-stamp">♥</div>
+          <div class="letter-wax-seal">💕</div>
+          <p class="letter-greeting" id="letterGreeting">My Dearest,</p>
+          <div class="typewriter" id="typewriter"></div>
+          <p class="letter-sign">Forever yours ♥</p>
+        </div>
+      </section>
+
+      <!-- ===== WISHES GALLERY ===== -->
       <section class="wishes-section">
-        <div class="section-label">🎁 Birthday Wishes</div>
+        <div class="section-label"><span class="label-icon">🌹</span> Birthday Wishes</div>
         <div class="wishes-track" id="wishesTrack"></div>
       </section>
 
-      <!-- Photo Memory Wall -->
+      <!-- ===== CELEBRATION GRID ===== -->
       <section class="memory-section">
-        <div class="section-label">🌟 Celebrating You</div>
+        <div class="section-label"><span class="label-icon">✨</span> Celebrate Together</div>
         <div class="memory-grid" id="memoryGrid"></div>
       </section>
 
-      <!-- Age Section -->
+      <!-- ===== AGE ===== -->
       <section class="age-section">
-        <div class="section-label">🎈 How old are you turning?</div>
+        <div class="section-label"><span class="label-icon">🎈</span> How old are you turning?</div>
         <div class="age-ring">
           <button class="age-ctrl" id="ageDown">−</button>
           <div class="age-center">
@@ -164,18 +210,24 @@
         <span>🎵</span>
       </div>
 
-      <!-- Final Wish -->
-      <section class="final-section">
+      <!-- ===== FINAL SECTION ===== -->
+      <section class="final-section" id="finalSection">
         <div class="final-wrap">
+          <div class="final-heart-beat">💕</div>
+          <p class="final-big-text">You Are My Everything</p>
           <p class="final-text">May this year bring you</p>
           <div class="rotating-words" id="rotatingWords">
-            <span class="rw active">endless happiness 💛</span>
-            <span class="rw">beautiful adventures 🌍</span>
-            <span class="rw">tons of love 💖</span>
-            <span class="rw">amazing surprises 🎁</span>
-            <span class="rw">all your dreams ✨</span>
+            <span class="rw active">all my love, forever 💕</span>
+            <span class="rw">a million more smiles 🌹</span>
+            <span class="rw">the world at your feet 👑</span>
+            <span class="rw">magic in every moment ✨</span>
+            <span class="rw">my heart, always 💖</span>
           </div>
-          <button class="share-btn" id="shareBtn">📸 Screenshot & Share!</button>
+          <div class="final-buttons">
+            <button class="share-btn" id="shareBtn">📸 Screenshot & Share!</button>
+            <button class="share-btn whatsapp-btn" id="whatsappBtn">💬 Send on WhatsApp</button>
+          </div>
+          <p class="made-with">Made with all my love, just for you 💕</p>
         </div>
       </section>
 
