@@ -1266,13 +1266,49 @@ body{
   border:1px solid var(--glass-border);
   display:flex;align-items:center;justify-content:center;
   font-size:1.3rem;cursor:pointer;z-index:50;
-  transition:transform 0.2s,background 0.2s;
+  transition:transform 0.2s,background 0.2s,box-shadow 0.3s;
 }
 .music-float:hover{transform:scale(1.1);background:var(--glass-hover)}
-.music-float.playing{animation:musicBounce 0.6s ease infinite}
+.music-float.playing{
+  animation:musicBounce 0.6s ease infinite;
+  box-shadow:0 0 20px rgba(255,45,117,0.4),0 0 40px rgba(255,45,117,0.15);
+  border-color:rgba(255,45,117,0.3);
+}
 @keyframes musicBounce{
   0%,100%{transform:scale(1)}
   50%{transform:scale(1.1) rotate(10deg)}
+}
+
+/* Song label tooltip */
+.music-label{
+  position:absolute;
+  right:60px;bottom:50%;transform:translateY(50%);
+  background:var(--glass);
+  backdrop-filter:blur(15px);
+  border:1px solid var(--glass-border);
+  border-radius:12px;
+  padding:8px 16px;
+  font-size:0.7rem;
+  font-weight:600;
+  color:rgba(255,255,255,0.8);
+  white-space:nowrap;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 0.3s,transform 0.3s;
+  transform:translateY(50%) translateX(10px);
+}
+.music-float:hover .music-label,
+.music-float.playing .music-label{
+  opacity:1;
+  transform:translateY(50%) translateX(0);
+}
+/* Hide label after 5s when playing (only show initially) */
+.music-float.playing .music-label{
+  animation:labelFade 6s ease forwards;
+}
+@keyframes labelFade{
+  0%,60%{opacity:1}
+  100%{opacity:0}
 }
 
 /* ===== FINAL SECTION ===== */

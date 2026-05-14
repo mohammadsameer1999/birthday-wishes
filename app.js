@@ -349,6 +349,9 @@ function runCountdown(name) {
       launchConfetti(200);
       startRotatingWords();
 
+      // Autoplay Heeriye! 🎶
+      playMusic();
+
       setTimeout(() => showBirthdayQuote(), 1500);
 
       startTypewriter(name);
@@ -756,10 +759,12 @@ function actionDance() {
 }
 
 function actionMusic() {
-  showToast("🎵 Our song is playing! 💕");
-  const music = document.getElementById('bgMusic');
-  music.play().catch(() => { });
-  document.getElementById('musicToggle').classList.add('playing');
+  showToast("🎵 Heeriye bajj raha hai! 💕");
+  if (!playing) {
+    music.play().catch(() => { });
+    playing = true;
+    toggleBtn.classList.add('playing');
+  }
   const notes = ['🎵', '🎶', '🎼', '🎸', '🎹', '🎺'];
   for (let i = 0; i < 20; i++) {
     setTimeout(() => {
@@ -1002,14 +1007,46 @@ document.getElementById('shareBtn').addEventListener('click', () => {
   showToast('📸 Screenshot this and share the love!');
 });
 
-// ===== MUSIC TOGGLE =====
+// ===== MUSIC (Heeriye - Arijit Singh) =====
 const music = document.getElementById('bgMusic');
 const toggleBtn = document.getElementById('musicToggle');
 let playing = false;
-toggleBtn.addEventListener('click', () => {
-  if (playing) { music.pause(); toggleBtn.classList.remove('playing'); }
-  else { music.play().catch(() => { }); toggleBtn.classList.add('playing'); }
-  playing = !playing;
+
+function playMusic() {
+  music.currentTime = 0;
+  music.volume = 0.7;
+  const playPromise = music.play();
+  if (playPromise !== undefined) {
+    playPromise.then(() => {
+      playing = true;
+      toggleBtn.classList.add('playing');
+    }).catch(() => {
+      // Autoplay blocked — will play on first user tap
+      const resumeOnTap = () => {
+        music.play().then(() => {
+          playing = true;
+          toggleBtn.classList.add('playing');
+        }).catch(() => {});
+        document.removeEventListener('click', resumeOnTap);
+        document.removeEventListener('touchstart', resumeOnTap);
+      };
+      document.addEventListener('click', resumeOnTap);
+      document.addEventListener('touchstart', resumeOnTap);
+    });
+  }
+}
+
+toggleBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (playing) {
+    music.pause();
+    toggleBtn.classList.remove('playing');
+    playing = false;
+  } else {
+    music.play().catch(() => {});
+    toggleBtn.classList.add('playing');
+    playing = true;
+  }
 });
 
 // ===== ROMANTIC BIRTHDAY SONG =====
