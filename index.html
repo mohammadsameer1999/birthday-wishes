@@ -104,10 +104,24 @@
         </div>
       </section>
 
-      <!-- ===== LOVE TIMELINE (NEW!) ===== -->
+      <!-- ===== LOVE TIMELINE ===== -->
       <section class="love-section" id="loveSection">
         <div class="section-label"><span class="label-icon">💕</span> Why You're So Special</div>
         <div class="love-timeline" id="loveTimeline"></div>
+      </section>
+
+      <!-- ===== CONSTELLATION NAME ===== -->
+      <section class="constellation-section" id="constellationSection">
+        <div class="section-label"><span class="label-icon">🌌</span> Written In The Stars</div>
+        <p class="constellation-sub">Your name shines brighter than any star in the sky</p>
+        <canvas id="constellationCanvas"></canvas>
+        <p class="constellation-hint">Touch the stars to make them sparkle ✨</p>
+      </section>
+
+      <!-- ===== PROMISE CARDS ===== -->
+      <section class="promise-section" id="promiseSection">
+        <div class="section-label"><span class="label-icon">🤞</span> My Promises To You</div>
+        <div class="promise-grid" id="promiseGrid"></div>
       </section>
 
       <!-- ===== CAKE ===== -->
@@ -178,6 +192,24 @@
         </div>
       </section>
 
+      <!-- ===== SCRATCH CARD ===== -->
+      <section class="scratch-section" id="scratchSection">
+        <div class="section-label"><span class="label-icon">🎁</span> A Special Gift For You</div>
+        <p class="scratch-sub">Scratch below to reveal your surprise!</p>
+        <div class="scratch-card-wrap">
+          <div class="scratch-card" id="scratchCard">
+            <canvas id="scratchCanvas"></canvas>
+            <div class="scratch-reveal-msg" id="scratchMsg">
+              <span class="scratch-emoji">💎</span>
+              <p class="scratch-title">You Are My Greatest Treasure</p>
+              <p class="scratch-text">No gift in this world compares to the gift of having you. You are worth more than all the diamonds and stars combined. Happy Birthday, my love!</p>
+              <span class="scratch-hearts">💕✨💕</span>
+            </div>
+          </div>
+          <p class="scratch-hint" id="scratchHint">👆 Scratch with your finger!</p>
+        </div>
+      </section>
+
       <!-- ===== WISHES GALLERY ===== -->
       <section class="wishes-section">
         <div class="section-label"><span class="label-icon">🌹</span> Birthday Wishes</div>
@@ -188,6 +220,12 @@
       <section class="memory-section">
         <div class="section-label"><span class="label-icon">✨</span> Celebrate Together</div>
         <div class="memory-grid" id="memoryGrid"></div>
+      </section>
+
+      <!-- ===== PHOTO MEMORIES ===== -->
+      <section class="polaroid-section" id="polaroidSection">
+        <div class="section-label"><span class="label-icon">📸</span> Moments That Matter</div>
+        <div class="polaroid-grid" id="polaroidGrid"></div>
       </section>
 
       <!-- ===== AGE ===== -->
@@ -211,10 +249,56 @@
         <div class="music-label">Heeriye — Arijit Singh</div>
       </div>
 
+      <!-- ===== LOVE METER ===== -->
+      <section class="lovemeter-section" id="lovemeterSection">
+        <div class="section-label"><span class="label-icon">💕</span> Love Meter</div>
+        <div class="lovemeter-wrap">
+          <div class="lovemeter-bar">
+            <div class="lovemeter-fill" id="lovemeterFill"></div>
+            <div class="lovemeter-glow" id="lovemeterGlow"></div>
+          </div>
+          <div class="lovemeter-percent" id="lovemeterPct">0%</div>
+          <p class="lovemeter-label" id="lovemeterLabel">Calculating...</p>
+        </div>
+      </section>
+
+      <!-- ===== MAGIC FORTUNE ===== -->
+      <section class="fortune-section" id="fortuneSection">
+        <div class="section-label"><span class="label-icon">🔮</span> Your Birthday Fortune</div>
+        <div class="fortune-ball" id="fortuneBall">
+          <div class="fortune-inner">
+            <div class="fortune-8">8</div>
+          </div>
+          <div class="fortune-answer hidden" id="fortuneAnswer"></div>
+        </div>
+        <p class="fortune-hint">Tap the magic ball to reveal your fortune!</p>
+      </section>
+
+      <!-- ===== I LOVE YOU — MULTIPLE LANGUAGES ===== -->
+      <section class="iloveyou-section" id="iloveyouSection">
+        <div class="section-label"><span class="label-icon">🌍</span> I Love You, In Every Language</div>
+        <div class="iloveyou-display" id="iloveyouDisplay"></div>
+      </section>
+
+      <!-- ===== PARTICLE HEART ===== -->
+      <section class="particle-heart-section" id="particleHeartSection">
+        <canvas id="heartParticleCanvas"></canvas>
+      </section>
+
+      <!-- ===== INFINITY SYMBOL ===== -->
+      <section class="infinity-section" id="infinitySection">
+        <div class="infinity-wrap">
+          <div class="infinity-symbol">∞</div>
+          <p class="infinity-text">Forever & Always</p>
+          <p class="infinity-sub" id="infinitySub"></p>
+        </div>
+      </section>
+
       <!-- ===== FINAL SECTION ===== -->
       <section class="final-section" id="finalSection">
         <div class="final-wrap">
           <div class="final-heart-beat">💕</div>
+          <div class="butterfly-release" id="butterflyRelease"></div>
           <p class="final-big-text">You Are My Everything</p>
           <p class="final-text">May this year bring you</p>
           <div class="rotating-words" id="rotatingWords">

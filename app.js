@@ -150,6 +150,7 @@ const envelopeLetter = document.getElementById('envelopeLetter');
 const screenName = document.getElementById('screenName');
 
 envelopeWrap.addEventListener('click', () => {
+  haptic(50);
   envelopeFlap.classList.add('open');
   setTimeout(() => envelopeLetter.classList.add('rise'), 400);
   setTimeout(() => {
@@ -278,17 +279,19 @@ function initSongVisualizer() {
 
 // ===== SCROLL REVEAL =====
 function initScrollReveal() {
-  const sections = document.querySelectorAll('.love-section, .cake-section, .song-section, .letter-section, .wishes-section, .memory-section, .age-section, .final-section');
+  const sections = document.querySelectorAll('.love-section, .constellation-section, .promise-section, .cake-section, .song-section, .letter-section, .scratch-section, .wishes-section, .polaroid-section, .memory-section, .age-section, .lovemeter-section, .fortune-section, .iloveyou-section, .particle-heart-section, .infinity-section, .final-section');
   sections.forEach(s => s.classList.add('reveal-on-scroll'));
 
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         entry.target.classList.add('revealed');
-        // Auto confetti when final section appears
+        // Auto confetti + butterflies when final section appears
         if (entry.target.id === 'finalSection') {
           launchConfetti(100);
           burstFireworks(5);
+          releaseButterflies();
+          haptic(80);
         }
       }
     });
@@ -349,8 +352,22 @@ function runCountdown(name) {
       launchConfetti(200);
       startRotatingWords();
 
+      // NEW features
+      initConstellation(name);
+      buildPromiseCards(name);
+      initScratchCard();
+      buildPolaroids(name);
+      initParticleHeart();
+      initLoveMeter(name);
+      initFortuneBall(name);
+      initILoveYou(name);
+      initInfinity(name);
+
       // Autoplay Heeriye! 🎶
       playMusic();
+
+      // Haptic feedback on big reveal!
+      haptic(100);
 
       setTimeout(() => showBirthdayQuote(), 1500);
 
@@ -508,6 +525,7 @@ const wishReveal = document.getElementById('wishReveal');
 function blowAllCandles() {
   const flames = document.querySelectorAll('.flame:not(.blown)');
   if (flames.length === 0) return;
+  haptic(60);
   flames.forEach((f, i) => setTimeout(() => {
     f.classList.add('blown');
     createSmoke(f);
@@ -1012,6 +1030,18 @@ const music = document.getElementById('bgMusic');
 const toggleBtn = document.getElementById('musicToggle');
 let playing = false;
 
+// Limit music to 30 seconds then loop back
+const MUSIC_DURATION = 30; // seconds
+
+function setupMusicLoop() {
+  music.addEventListener('timeupdate', () => {
+    if (music.currentTime >= MUSIC_DURATION) {
+      music.currentTime = 0;
+    }
+  });
+}
+setupMusicLoop();
+
 function playMusic() {
   music.currentTime = 0;
   music.volume = 0.7;
@@ -1156,6 +1186,667 @@ emojiRainLayer.addEventListener('touchmove', (e) => {
     setTimeout(() => { emojiRainLayer.style.pointerEvents = 'all'; }, 300);
   }
 }, { passive: true });
+
+// ===== CONSTELLATION NAME (Stars spelling her name) =====
+function initConstellation(name) {
+  const canvas = document.getElementById('constellationCanvas');
+  if (!canvas) return;
+  const cCtx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  cCtx.scale(dpr, dpr);
+  const W = rect.width, H = rect.height;
+
+  // Generate star positions along the name text path
+  const nameStars = [];
+  const bgStars = [];
+
+  // Use a temp canvas to get text pixel positions
+  const tmp = document.createElement('canvas');
+  tmp.width = W; tmp.height = H;
+  const tCtx = tmp.getContext('2d');
+  // Much bigger font — fills the canvas properly
+  const fontSize = Math.min(W / (name.length * 0.55), H * 0.55);
+  tCtx.font = `900 ${fontSize}px 'Playfair Display', serif`;
+  tCtx.textAlign = 'center';
+  tCtx.textBaseline = 'middle';
+  tCtx.fillStyle = '#fff';
+  tCtx.fillText(name, W / 2, H / 2);
+  const imageData = tCtx.getImageData(0, 0, W, H);
+
+  // Sample points from the text — much denser sampling
+  const step = 3;
+  for (let y = 0; y < H; y += step) {
+    for (let x = 0; x < W; x += step) {
+      const i = (y * W + x) * 4;
+      if (imageData.data[i + 3] > 128) {
+        if (Math.random() < 0.35) {
+          nameStars.push({
+            x: x + (Math.random() - 0.5) * 2,
+            y: y + (Math.random() - 0.5) * 2,
+            r: Math.random() * 2.5 + 1.2,
+            alpha: Math.random(),
+            da: (Math.random() - 0.5) * 0.03,
+            glow: Math.random() > 0.4,
+          });
+        }
+      }
+    }
+  }
+
+  // Background stars
+  for (let i = 0; i < 100; i++) {
+    bgStars.push({
+      x: Math.random() * W, y: Math.random() * H,
+      r: Math.random() * 0.8 + 0.2, alpha: Math.random() * 0.5,
+      da: (Math.random() - 0.5) * 0.01,
+    });
+  }
+
+  // Connections between nearby name stars — longer range for visible lines
+  const connections = [];
+  for (let i = 0; i < nameStars.length; i++) {
+    let connCount = 0;
+    for (let j = i + 1; j < nameStars.length && connCount < 3; j++) {
+      const dx = nameStars[i].x - nameStars[j].x;
+      const dy = nameStars[i].y - nameStars[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 30 && Math.random() < 0.25) {
+        connections.push([i, j, dist]);
+        connCount++;
+      }
+    }
+  }
+
+  let sparkles = [];
+  canvas.addEventListener('click', (e) => {
+    const cr = canvas.getBoundingClientRect();
+    const mx = e.clientX - cr.left;
+    const my = e.clientY - cr.top;
+    for (let i = 0; i < 15; i++) {
+      sparkles.push({
+        x: mx, y: my,
+        vx: (Math.random() - 0.5) * 6,
+        vy: (Math.random() - 0.5) * 6,
+        life: 1, size: Math.random() * 3 + 1,
+        hue: Math.random() * 60 + 30,
+      });
+    }
+    haptic();
+  });
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const cr = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    const mx = touch.clientX - cr.left;
+    const my = touch.clientY - cr.top;
+    for (let i = 0; i < 15; i++) {
+      sparkles.push({
+        x: mx, y: my,
+        vx: (Math.random() - 0.5) * 6,
+        vy: (Math.random() - 0.5) * 6,
+        life: 1, size: Math.random() * 3 + 1,
+        hue: Math.random() * 60 + 30,
+      });
+    }
+    haptic();
+  }, { passive: false });
+
+  function drawConst() {
+    cCtx.fillStyle = 'rgba(5,0,16,0.2)';
+    cCtx.fillRect(0, 0, W, H);
+
+    // Background stars
+    bgStars.forEach(s => {
+      s.alpha += s.da;
+      if (s.alpha <= 0 || s.alpha >= 0.5) s.da *= -1;
+      cCtx.beginPath();
+      cCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      cCtx.fillStyle = `rgba(255,255,255,${Math.abs(s.alpha)})`;
+      cCtx.fill();
+    });
+
+    // Constellation connections
+    connections.forEach(([i, j, dist]) => {
+      const a = nameStars[i], b = nameStars[j];
+      const avgAlpha = (a.alpha + b.alpha) / 2;
+      cCtx.beginPath();
+      cCtx.moveTo(a.x, a.y);
+      cCtx.lineTo(b.x, b.y);
+      cCtx.strokeStyle = `rgba(255,210,130,${avgAlpha * 0.25})`;
+      cCtx.lineWidth = 0.7;
+      cCtx.stroke();
+    });
+
+    // Name stars — bright and glowy
+    nameStars.forEach(s => {
+      s.alpha += s.da;
+      if (s.alpha <= 0.3 || s.alpha >= 1) s.da *= -1;
+
+      // Outer glow
+      if (s.glow) {
+        cCtx.beginPath();
+        cCtx.arc(s.x, s.y, s.r * 3, 0, Math.PI * 2);
+        cCtx.fillStyle = `rgba(255,200,100,${s.alpha * 0.12})`;
+        cCtx.fill();
+      }
+
+      // Main star
+      cCtx.beginPath();
+      cCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      cCtx.fillStyle = `rgba(255,${220 + Math.floor(s.alpha * 35)},${180 + Math.floor(s.alpha * 75)},${s.alpha * 0.95})`;
+      cCtx.fill();
+
+      // Bright center
+      cCtx.beginPath();
+      cCtx.arc(s.x, s.y, s.r * 0.4, 0, Math.PI * 2);
+      cCtx.fillStyle = `rgba(255,255,240,${s.alpha * 0.9})`;
+      cCtx.fill();
+    });
+
+    // Sparkles from clicks
+    sparkles = sparkles.filter(s => s.life > 0);
+    sparkles.forEach(s => {
+      s.x += s.vx; s.y += s.vy;
+      s.vy += 0.05;
+      s.life -= 0.02;
+      cCtx.beginPath();
+      cCtx.arc(s.x, s.y, s.size * s.life, 0, Math.PI * 2);
+      cCtx.fillStyle = `hsla(${s.hue},100%,75%,${s.life})`;
+      cCtx.fill();
+    });
+
+    requestAnimationFrame(drawConst);
+  }
+
+  const obs = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) {
+      obs.disconnect();
+      drawConst();
+    }
+  }, { threshold: 0.3 });
+  obs.observe(canvas);
+}
+
+// ===== PROMISE CARDS (Flip reveal) =====
+function buildPromiseCards(name) {
+  const grid = document.getElementById('promiseGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  const promises = [
+    { icon: '🌅', front: 'Tap to reveal', back: `I promise to make you smile every single day, ${name}`, emoji: '😊' },
+    { icon: '🛡️', front: 'Tap to reveal', back: 'I promise to always protect your heart and keep it safe', emoji: '💖' },
+    { icon: '🌍', front: 'Tap to reveal', back: 'I promise to take you on adventures you\'ve only dreamed of', emoji: '✈️' },
+    { icon: '🌙', front: 'Tap to reveal', back: 'I promise to be your calm in every storm', emoji: '🌈' },
+    { icon: '👂', front: 'Tap to reveal', back: 'I promise to always listen, always understand, always care', emoji: '💕' },
+    { icon: '♾️', front: 'Tap to reveal', back: `I promise to love you endlessly, ${name}, forever and always`, emoji: '💍' },
+  ];
+
+  promises.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'promise-card';
+    card.style.setProperty('--d', `${0.2 + i * 0.1}s`);
+    card.innerHTML = `
+      <div class="promise-card-inner">
+        <div class="promise-front">
+          <span class="promise-front-icon">${p.icon}</span>
+          <span class="promise-front-text">${p.front}</span>
+        </div>
+        <div class="promise-back">
+          <span class="promise-back-emoji">${p.emoji}</span>
+          <p class="promise-back-text">${p.back}</p>
+        </div>
+      </div>
+    `;
+    card.addEventListener('click', () => {
+      card.classList.toggle('flipped');
+      haptic();
+      launchSparks(
+        card.getBoundingClientRect().left + card.getBoundingClientRect().width / 2,
+        card.getBoundingClientRect().top + card.getBoundingClientRect().height / 2,
+        12
+      );
+    });
+    grid.appendChild(card);
+  });
+}
+
+// ===== SCRATCH CARD =====
+function initScratchCard() {
+  const canvas = document.getElementById('scratchCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+
+  // Draw scratch overlay
+  const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  grad.addColorStop(0, '#c9a0dc');
+  grad.addColorStop(0.3, '#e8a87c');
+  grad.addColorStop(0.6, '#ff6eb4');
+  grad.addColorStop(1, '#a855f7');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Add "Scratch Me" text
+  ctx.font = 'bold 24px Poppins, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.8)';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('🎁 Scratch Me! 🎁', canvas.width / 2, canvas.height / 2 - 15);
+  ctx.font = '14px Poppins, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.fillText('A surprise awaits...', canvas.width / 2, canvas.height / 2 + 15);
+
+  // Add sparkle pattern
+  for (let i = 0; i < 30; i++) {
+    ctx.beginPath();
+    ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 2 + 0.5, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.4 + 0.1})`;
+    ctx.fill();
+  }
+
+  let isScratching = false;
+  let scratchedPixels = 0;
+  const totalPixels = canvas.width * canvas.height;
+
+  function scratch(x, y) {
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath();
+    ctx.arc(x, y, 25, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+
+    // Check percentage scratched
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    let clear = 0;
+    for (let i = 3; i < data.length; i += 16) {
+      if (data[i] === 0) clear++;
+    }
+    const pct = clear / (data.length / 16);
+    if (pct > 0.4) {
+      canvas.style.transition = 'opacity 0.8s';
+      canvas.style.opacity = '0';
+      canvas.style.pointerEvents = 'none';
+      document.getElementById('scratchHint').classList.add('hidden-hint');
+      haptic();
+      launchConfetti(100);
+      burstFireworks(5);
+    }
+  }
+
+  canvas.addEventListener('mousedown', () => isScratching = true);
+  canvas.addEventListener('mouseup', () => isScratching = false);
+  canvas.addEventListener('mouseleave', () => isScratching = false);
+  canvas.addEventListener('mousemove', (e) => {
+    if (!isScratching) return;
+    const r = canvas.getBoundingClientRect();
+    scratch(e.clientX - r.left, e.clientY - r.top);
+  });
+
+  canvas.addEventListener('touchstart', (e) => { isScratching = true; e.preventDefault(); }, { passive: false });
+  canvas.addEventListener('touchend', () => isScratching = false);
+  canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (!isScratching) return;
+    const touch = e.touches[0];
+    const r = canvas.getBoundingClientRect();
+    scratch(touch.clientX - r.left, touch.clientY - r.top);
+  }, { passive: false });
+}
+
+// ===== POLAROID MEMORIES =====
+function buildPolaroids(name) {
+  const grid = document.getElementById('polaroidGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  const memories = [
+    { emoji: '🌅', bg: 'linear-gradient(135deg,#ff9a9e,#fad0c4)', caption: 'Every sunrise with you', tapeRot: '-3deg' },
+    { emoji: '🎵', bg: 'linear-gradient(135deg,#a18cd1,#fbc2eb)', caption: 'Our favorite songs', tapeRot: '2deg' },
+    { emoji: '🍕', bg: 'linear-gradient(135deg,#fbc2eb,#a6c1ee)', caption: 'Late night conversations', tapeRot: '-1deg' },
+    { emoji: '🌸', bg: 'linear-gradient(135deg,#ffecd2,#fcb69f)', caption: `${name}'s beautiful smile`, tapeRot: '3deg' },
+    { emoji: '✈️', bg: 'linear-gradient(135deg,#667eea,#764ba2)', caption: 'Adventures together', tapeRot: '-2deg' },
+    { emoji: '🌙', bg: 'linear-gradient(135deg,#0c3547,#634778)', caption: 'Stargazing nights', tapeRot: '1deg' },
+  ];
+
+  memories.forEach((m, i) => {
+    const card = document.createElement('div');
+    card.className = 'polaroid-card';
+    card.style.setProperty('--rot', `${Math.random() * 8 - 4}deg`);
+    card.style.setProperty('--d', `${0.3 + i * 0.15}s`);
+    card.innerHTML = `
+      <div class="polaroid-tape" style="--tape-rot:${m.tapeRot}"></div>
+      <div class="polaroid-img" style="background:${m.bg}">
+        <span>${m.emoji}</span>
+      </div>
+      <p class="polaroid-caption">${m.caption}</p>
+    `;
+    card.addEventListener('click', () => {
+      haptic();
+      launchSparks(
+        card.getBoundingClientRect().left + card.getBoundingClientRect().width / 2,
+        card.getBoundingClientRect().top + card.getBoundingClientRect().height / 2,
+        15
+      );
+    });
+    grid.appendChild(card);
+  });
+}
+
+// ===== PARTICLE HEART CANVAS =====
+function initParticleHeart() {
+  const canvas = document.getElementById('heartParticleCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = rect.height;
+
+  const particles = [];
+  const heartPoints = [];
+  const cx = W / 2, cy = H / 2 - 10;
+  const scale = Math.min(W, H) / 25;
+
+  // Heart parametric equation
+  for (let angle = 0; angle < Math.PI * 2; angle += 0.05) {
+    const x = 16 * Math.pow(Math.sin(angle), 3);
+    const y = -(13 * Math.cos(angle) - 5 * Math.cos(2 * angle) - 2 * Math.cos(3 * angle) - Math.cos(4 * angle));
+    heartPoints.push({ x: cx + x * scale, y: cy + y * scale });
+  }
+
+  // Create particles that will form the heart
+  for (let i = 0; i < heartPoints.length; i++) {
+    const hp = heartPoints[i];
+    for (let j = 0; j < 2; j++) {
+      particles.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        targetX: hp.x + (Math.random() - 0.5) * 8,
+        targetY: hp.y + (Math.random() - 0.5) * 8,
+        size: Math.random() * 2.5 + 0.5,
+        hue: Math.random() * 40 + 330,
+        speed: 0.02 + Math.random() * 0.02,
+        arrived: false,
+        wobble: Math.random() * Math.PI * 2,
+        wobbleSpeed: 0.02 + Math.random() * 0.02,
+      });
+    }
+  }
+
+  let animating = false;
+
+  function drawParticleHeart() {
+    ctx.fillStyle = 'rgba(5,0,16,0.15)';
+    ctx.fillRect(0, 0, W, H);
+
+    particles.forEach(p => {
+      if (!p.arrived) {
+        p.x += (p.targetX - p.x) * p.speed;
+        p.y += (p.targetY - p.y) * p.speed;
+        if (Math.abs(p.x - p.targetX) < 1 && Math.abs(p.y - p.targetY) < 1) {
+          p.arrived = true;
+        }
+      } else {
+        p.wobble += p.wobbleSpeed;
+        p.x = p.targetX + Math.sin(p.wobble) * 1.5;
+        p.y = p.targetY + Math.cos(p.wobble) * 1.5;
+      }
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${p.hue},80%,65%,${p.arrived ? 0.8 : 0.4})`;
+      ctx.fill();
+    });
+
+    if (animating) requestAnimationFrame(drawParticleHeart);
+  }
+
+  const obs = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) {
+      if (!animating) {
+        animating = true;
+        drawParticleHeart();
+      }
+    } else {
+      animating = false;
+    }
+  }, { threshold: 0.2 });
+  obs.observe(canvas);
+}
+
+// ===== BUTTERFLY RELEASE =====
+function releaseButterflies() {
+  const container = document.getElementById('butterflyRelease');
+  if (!container) return;
+  const butterflies = ['🦋', '🦋', '🦋', '🦋'];
+  const colors = ['', 'filter:hue-rotate(30deg)', 'filter:hue-rotate(60deg)', 'filter:hue-rotate(-30deg)'];
+
+  for (let i = 0; i < 12; i++) {
+    const b = document.createElement('div');
+    b.className = 'butterfly';
+    b.textContent = butterflies[i % butterflies.length];
+    const startX = (Math.random() - 0.5) * 50;
+    b.style.cssText = `
+      left:50%;top:60%;${colors[i % colors.length]};
+      --dur:${4 + Math.random() * 3}s;
+      --delay:${i * 0.3}s;
+      --x1:${startX + (Math.random() - 0.5) * 80}px;
+      --y1:${-30 - Math.random() * 50}px;
+      --x2:${startX + (Math.random() - 0.5) * 150}px;
+      --y2:${-80 - Math.random() * 80}px;
+      --x3:${startX + (Math.random() - 0.5) * 200}px;
+      --y3:${-140 - Math.random() * 100}px;
+      --x4:${startX + (Math.random() - 0.5) * 250}px;
+      --y4:${-200 - Math.random() * 120}px;
+      --x5:${startX + (Math.random() - 0.5) * 300}px;
+      --y5:${-300 - Math.random() * 150}px;
+      font-size:${1.2 + Math.random() * 1}rem;
+    `;
+    container.appendChild(b);
+    setTimeout(() => b.remove(), 8000);
+  }
+}
+
+// ===== LOVE METER =====
+function initLoveMeter(name) {
+  const fill = document.getElementById('lovemeterFill');
+  const pct = document.getElementById('lovemeterPct');
+  const label = document.getElementById('lovemeterLabel');
+  const glow = document.getElementById('lovemeterGlow');
+  if (!fill) return;
+
+  const obs = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) {
+      obs.disconnect();
+      let current = 0;
+      const target = 100;
+      const steps = [
+        { at: 0, text: 'Scanning heart...' },
+        { at: 20, text: 'Feeling the love...' },
+        { at: 50, text: 'Love levels rising...' },
+        { at: 75, text: 'Almost there...' },
+        { at: 95, text: 'Off the charts!' },
+        { at: 100, text: `${name} = Infinite Love 💕` },
+      ];
+
+      fill.style.width = '100%';
+      glow.style.boxShadow = 'inset 0 0 20px rgba(255,45,117,0.4),0 0 30px rgba(255,45,117,0.3)';
+
+      const counter = setInterval(() => {
+        current++;
+        pct.textContent = current + '%';
+        const step = steps.filter(s => s.at <= current).pop();
+        if (step) label.textContent = step.text;
+        if (current >= target) {
+          clearInterval(counter);
+          haptic(80);
+          launchConfetti(80);
+        }
+      }, 30);
+    }
+  }, { threshold: 0.3 });
+  obs.observe(fill.parentElement);
+}
+
+// ===== MAGIC FORTUNE BALL =====
+function initFortuneBall(name) {
+  const ball = document.getElementById('fortuneBall');
+  if (!ball) return;
+
+  const fortunes = [
+    `This year, ${name}, all your dreams come true ✨`,
+    `Love and happiness follow you everywhere you go, ${name} 💕`,
+    `A beautiful surprise is coming your way very soon 🎁`,
+    `The stars say: ${name} is destined for greatness 🌟`,
+    `Your smile will open a thousand doors this year 😊`,
+    `Someone very special is thinking about you right now 💖`,
+    `This birthday marks the beginning of your best chapter yet 📖`,
+    `The universe has big plans for you, ${name} 🌌`,
+    `You will find joy in the smallest moments this year 🌸`,
+    `A love deeper than the ocean awaits you 🌊💕`,
+  ];
+
+  let revealed = false;
+
+  ball.addEventListener('click', () => {
+    if (revealed) {
+      // Reset
+      document.getElementById('fortuneAnswer').classList.add('hidden');
+      document.querySelector('.fortune-inner').style.opacity = '1';
+      revealed = false;
+      return;
+    }
+
+    ball.classList.add('shake');
+    haptic(50);
+
+    setTimeout(() => {
+      ball.classList.remove('shake');
+      const answer = document.getElementById('fortuneAnswer');
+      const fortune = fortunes[Math.floor(Math.random() * fortunes.length)];
+      answer.textContent = fortune;
+      answer.classList.remove('hidden');
+      document.querySelector('.fortune-inner').style.opacity = '0';
+      revealed = true;
+      haptic(30);
+      burstFireworks(2);
+    }, 700);
+  });
+}
+
+// ===== I LOVE YOU IN EVERY LANGUAGE =====
+function initILoveYou(name) {
+  const display = document.getElementById('iloveyouDisplay');
+  if (!display) return;
+
+  const translations = [
+    { text: 'I Love You', lang: 'English' },
+    { text: 'Main Tumse Pyaar Karta Hoon', lang: 'Hindi' },
+    { text: 'Te Amo', lang: 'Spanish' },
+    { text: 'Je T\'aime', lang: 'French' },
+    { text: '사랑해요', lang: 'Korean' },
+    { text: '愛してる', lang: 'Japanese' },
+    { text: 'أحبك', lang: 'Arabic' },
+    { text: 'Ich Liebe Dich', lang: 'German' },
+    { text: 'Ti Amo', lang: 'Italian' },
+    { text: 'Eu Te Amo', lang: 'Portuguese' },
+    { text: 'Seni Seviyorum', lang: 'Turkish' },
+    { text: 'Я тебя люблю', lang: 'Russian' },
+    { text: `${name}, I Love You`, lang: 'My Heart 💕' },
+  ];
+
+  const textEl = document.createElement('div');
+  textEl.className = 'ily-text';
+  const langEl = document.createElement('div');
+  langEl.className = 'ily-lang';
+  display.appendChild(textEl);
+  display.appendChild(langEl);
+
+  let index = 0;
+  let running = false;
+
+  function showNext() {
+    if (!running) return;
+    const t = translations[index];
+    textEl.classList.remove('show');
+    textEl.classList.add('exit');
+
+    setTimeout(() => {
+      textEl.textContent = t.text;
+      langEl.textContent = `— ${t.lang}`;
+      textEl.classList.remove('exit');
+      textEl.classList.add('show');
+      index = (index + 1) % translations.length;
+    }, 500);
+
+    setTimeout(showNext, 2500);
+  }
+
+  const obs = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting && !running) {
+      running = true;
+      textEl.textContent = translations[0].text;
+      langEl.textContent = `— ${translations[0].lang}`;
+      textEl.classList.add('show');
+      index = 1;
+      setTimeout(showNext, 2500);
+    }
+  }, { threshold: 0.3 });
+  obs.observe(display);
+}
+
+// ===== INFINITY SECTION =====
+function initInfinity(name) {
+  const sub = document.getElementById('infinitySub');
+  if (!sub) return;
+  sub.textContent = `My love for you, ${name}, has no end`;
+}
+
+// ===== DOUBLE TAP HEART EXPLOSION =====
+let lastTap = 0;
+document.addEventListener('click', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) {
+    // Double tap detected!
+    const hearts = ['❤️', '💖', '💗', '💕', '💓', '💝'];
+    for (let i = 0; i < 8; i++) {
+      const h = document.createElement('div');
+      h.className = 'doubletap-heart';
+      h.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+      h.style.cssText = `left:${e.clientX + (Math.random() - 0.5) * 60}px;top:${e.clientY + (Math.random() - 0.5) * 60}px;animation-delay:${i * 0.05}s;font-size:${2 + Math.random() * 3}rem;`;
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 1200);
+    }
+    haptic(40);
+  }
+  lastTap = now;
+});
+
+// ===== GYROSCOPE PARALLAX (mobile) =====
+if (window.DeviceOrientationEvent) {
+  window.addEventListener('deviceorientation', (e) => {
+    const meshBg = document.getElementById('meshBg');
+    if (!meshBg || !meshBg.offsetParent) return;
+    const beta = (e.beta || 0) * 0.3;
+    const gamma = (e.gamma || 0) * 0.3;
+    meshBg.style.transform = `translate(${gamma}px, ${beta}px)`;
+  }, { passive: true });
+}
+
+// ===== HAPTIC VIBRATION (mobile) =====
+function haptic(duration = 30) {
+  if (navigator.vibrate) {
+    navigator.vibrate(duration);
+  }
+}
 
 // ===== TOAST =====
 function showToast(msg) {
