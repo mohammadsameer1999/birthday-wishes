@@ -85,6 +85,21 @@ window.addEventListener('resize', () => {
   nebulaCanvas.height = window.innerHeight;
 });
 
+// ===== INTRO TYPEWRITER =====
+const magicTextEl = document.getElementById('magicText');
+const introFullText = 'Someone special sent you something...';
+let introCharIdx = 0;
+function typeIntro() {
+  if (introCharIdx < introFullText.length) {
+    magicTextEl.textContent += introFullText.charAt(introCharIdx);
+    introCharIdx++;
+    setTimeout(typeIntro, 60);
+  } else {
+    magicTextEl.classList.add('done');
+  }
+}
+typeIntro();
+
 // ===== ROSE PETALS (Intro) =====
 const rosePetals = document.getElementById('rosePetals');
 for (let i = 0; i < 20; i++) {
@@ -239,22 +254,53 @@ function startBirthday(name) {
   if (!name.trim()) { showToast('Enter their name first! 💕'); return; }
   const n = name.trim();
 
-  // Smooth transition
+  // Smooth transition to loading screen
   screenName.style.animation = 'none';
   screenName.style.transition = 'opacity 0.8s, filter 0.8s, transform 0.8s';
   screenName.style.opacity = '0';
   screenName.style.filter = 'blur(20px)';
   screenName.style.transform = 'scale(1.05)';
 
+  const loadingScreen = document.getElementById('loadingScreen');
+  const loadingRingFill = document.getElementById('loadingRingFill');
+  const loadingTexts = ['Loading your surprises', 'Preparing the magic', 'Gathering love', 'Almost ready'];
+  const loadingTextEl = document.getElementById('loadingText');
+  let ltIdx = 0;
+
   setTimeout(() => {
     screenName.classList.add('hidden');
     screenName.style.cssText = '';
-    screenMain.classList.remove('hidden');
-    screenMain.style.animation = 'fadeInUp 0.6s ease both';
-    initParticles();
-    initSongVisualizer();
-    initScrollReveal();
-    runCountdown(n);
+    loadingScreen.classList.remove('hidden');
+
+    // Animate loading ring
+    requestAnimationFrame(() => {
+      loadingRingFill.style.strokeDashoffset = '0';
+    });
+
+    // Cycle loading text
+    const ltInterval = setInterval(() => {
+      ltIdx = (ltIdx + 1) % loadingTexts.length;
+      loadingTextEl.textContent = loadingTexts[ltIdx];
+    }, 600);
+
+    // After loading completes
+    setTimeout(() => {
+      clearInterval(ltInterval);
+      loadingScreen.style.transition = 'opacity 0.6s, filter 0.6s';
+      loadingScreen.style.opacity = '0';
+      loadingScreen.style.filter = 'blur(10px)';
+
+      setTimeout(() => {
+        loadingScreen.classList.add('hidden');
+        loadingScreen.style.cssText = '';
+        screenMain.classList.remove('hidden');
+        screenMain.style.animation = 'fadeInUp 0.6s ease both';
+        initParticles();
+        initSongVisualizer();
+        initScrollReveal();
+        runCountdown(n);
+      }, 600);
+    }, 2200);
   }, 800);
 }
 
@@ -279,7 +325,7 @@ function initSongVisualizer() {
 
 // ===== SCROLL REVEAL =====
 function initScrollReveal() {
-  const sections = document.querySelectorAll('.love-section, .constellation-section, .promise-section, .cake-section, .song-section, .letter-section, .scratch-section, .wishes-section, .polaroid-section, .memory-section, .age-section, .lovemeter-section, .fortune-section, .iloveyou-section, .particle-heart-section, .infinity-section, .final-section');
+  const sections = document.querySelectorAll('.love-section, .constellation-section, .promise-section, .cake-section, .song-section, .letter-section, .scratch-section, .wishes-section, .trivia-section, .memory-section, .cannon-section, .polaroid-section, .jar-section, .age-section, .zodiac-section, .countdown-section, .lovemeter-section, .fortune-section, .wishjar-section, .iloveyou-section, .heartbeat-section, .particle-heart-section, .infinity-section, .final-section');
   sections.forEach(s => s.classList.add('reveal-on-scroll'));
 
   const observer = new IntersectionObserver((entries) => {
@@ -362,6 +408,18 @@ function runCountdown(name) {
       initFortuneBall(name);
       initILoveYou(name);
       initInfinity(name);
+
+      // V2 features
+      buildTriviaQuiz(name);
+      initConfettiCannon();
+      buildMemoryJar(name);
+      buildZodiac();
+      initBirthdayCountdown();
+      initWishJar(name);
+      initHeartBeatSync(name);
+      initShootingStars();
+      initFinalFloatingHearts();
+      document.getElementById('currentYear').textContent = new Date().getFullYear();
 
       // Autoplay Heeriye! 🎶
       playMusic();
@@ -1034,9 +1092,16 @@ let playing = false;
 const MUSIC_DURATION = 30; // seconds
 
 function setupMusicLoop() {
+  const musicRingFill = document.getElementById('musicRingFill');
+  const circumference = 2 * Math.PI * 24; // r=24
   music.addEventListener('timeupdate', () => {
     if (music.currentTime >= MUSIC_DURATION) {
       music.currentTime = 0;
+    }
+    // Update progress ring
+    if (musicRingFill) {
+      const progress = music.currentTime / MUSIC_DURATION;
+      musicRingFill.style.strokeDashoffset = circumference * (1 - progress);
     }
   });
 }
@@ -1855,3 +1920,439 @@ function showToast(msg) {
   requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
   setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 500); }, 3500);
 }
+
+// ===== V2: TRIVIA QUIZ =====
+function buildTriviaQuiz(name) {
+  const container = document.getElementById('triviaContainer');
+  const scoreEl = document.getElementById('triviaScore');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const questions = [
+    {
+      q: `What's my favorite thing about ${name}?`,
+      options: ['Your beautiful smile', 'Your kind heart', 'Everything about you'],
+      correct: 2,
+      reveal: `It's EVERYTHING! There's nothing about ${name} I don't love 💕`
+    },
+    {
+      q: `Where would I take ${name} on a dream date?`,
+      options: ['Paris — The City of Love', 'A private beach at sunset', 'Anywhere, as long as we\'re together'],
+      correct: 2,
+      reveal: `The destination doesn't matter — being with ${name} is the real adventure! ✈️`
+    },
+    {
+      q: `What do I love most about us?`,
+      options: ['The way we laugh together', 'How we understand each other', 'That our love grows stronger every day'],
+      correct: 2,
+      reveal: `Every single day our love only gets deeper and more beautiful 💖`
+    },
+  ];
+
+  let score = 0;
+  let answered = 0;
+
+  questions.forEach((qObj, qi) => {
+    const card = document.createElement('div');
+    card.className = 'trivia-card';
+    card.innerHTML = `<p class="trivia-question">${qObj.q}</p><div class="trivia-options"></div>`;
+    const optionsDiv = card.querySelector('.trivia-options');
+
+    qObj.options.forEach((opt, oi) => {
+      const btn = document.createElement('button');
+      btn.className = 'trivia-option';
+      btn.textContent = opt;
+      btn.addEventListener('click', () => {
+        if (btn.classList.contains('disabled')) return;
+        optionsDiv.querySelectorAll('.trivia-option').forEach(b => b.classList.add('disabled'));
+        if (oi === qObj.correct) {
+          btn.classList.add('correct');
+          score++;
+          launchConfetti(60);
+          haptic(50);
+        } else {
+          btn.classList.add('wrong');
+          optionsDiv.children[qObj.correct].classList.add('correct');
+        }
+        const reveal = document.createElement('p');
+        reveal.className = 'trivia-answer';
+        reveal.textContent = qObj.reveal;
+        card.appendChild(reveal);
+
+        answered++;
+        if (answered === questions.length) {
+          setTimeout(() => showTriviaScore(score, questions.length, name), 800);
+        }
+      });
+      optionsDiv.appendChild(btn);
+    });
+    container.appendChild(card);
+  });
+
+  function showTriviaScore(s, total, name) {
+    scoreEl.classList.remove('hidden');
+    const msgs = [
+      `We have a beautiful journey ahead, ${name}!`,
+      `You know me so well, ${name}! 💕`,
+      `${name}, we're truly soulmates! 🥰`,
+    ];
+    scoreEl.innerHTML = `
+      <div class="trivia-score-num">${s}/${total}</div>
+      <p class="trivia-score-text">${msgs[s] || msgs[2]}</p>
+    `;
+    if (s === total) { launchConfetti(150); burstFireworks(5); }
+  }
+}
+
+// ===== V2: CONFETTI CANNON =====
+function initConfettiCannon() {
+  const btn = document.getElementById('cannonBtn');
+  if (!btn) return;
+  let cooling = false;
+
+  btn.addEventListener('click', () => {
+    if (cooling) return;
+    cooling = true;
+    btn.classList.add('cooldown');
+    haptic(100);
+
+    // MEGA celebration!
+    launchConfetti(300);
+    burstFireworks(15);
+
+    // Emoji rain
+    const emojis = ['🎉', '🎊', '🥳', '🎂', '💕', '✨', '🎈', '🎁', '🌹', '💖', '👑', '🦋'];
+    for (let i = 0; i < 30; i++) {
+      setTimeout(() => {
+        const el = document.createElement('div'); el.className = 'action-float';
+        el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        el.style.cssText = `left:${Math.random() * 100}vw;--end-y:${-300 - Math.random() * 400}px;--end-x:${Math.random() * 200 - 100}px;--rot:${Math.random() * 720}deg;font-size:${1.5 + Math.random() * 2}rem;animation-duration:${2 + Math.random() * 2}s;`;
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 4500);
+      }, i * 60);
+    }
+
+    // Screen shake
+    document.body.style.animation = 'none';
+    document.body.style.animation = 'screenShake 0.5s ease';
+    setTimeout(() => document.body.style.animation = '', 500);
+
+    showToast('🎉 MAXIMUM CELEBRATION! 🎊');
+
+    setTimeout(() => {
+      cooling = false;
+      btn.classList.remove('cooldown');
+    }, 3000);
+  });
+}
+
+// Screen shake keyframes (added dynamically)
+if (!document.getElementById('screenShakeStyle')) {
+  const style = document.createElement('style');
+  style.id = 'screenShakeStyle';
+  style.textContent = `@keyframes screenShake{0%,100%{transform:translate(0)}10%{transform:translate(-5px,3px)}20%{transform:translate(5px,-3px)}30%{transform:translate(-3px,5px)}40%{transform:translate(3px,-5px)}50%{transform:translate(-2px,2px)}}`;
+  document.head.appendChild(style);
+}
+
+// ===== V2: MEMORY JAR =====
+function buildMemoryJar(name) {
+  const notesContainer = document.getElementById('jarNotes');
+  const sparklesContainer = document.getElementById('jarSparkles');
+  if (!notesContainer) return;
+
+  const memories = [
+    { emoji: '🌅', text: `Every sunrise reminds me of the first time I saw ${name}'s smile — pure magic.` },
+    { emoji: '💬', text: `Our late-night conversations are my favorite thing in the world.` },
+    { emoji: '🎵', text: `Every love song I hear, I think of you, ${name}.` },
+    { emoji: '🤗', text: `Your hugs feel like home. I never want to let go.` },
+    { emoji: '😊', text: `The way you laugh makes my entire day better, ${name}.` },
+    { emoji: '🌙', text: `You're the last thought on my mind every night and the first every morning.` },
+    { emoji: '💪', text: `You make me a better person, ${name}. Thank you for being you.` },
+    { emoji: '🌈', text: `After every storm, you are my rainbow. Always.` },
+  ];
+
+  const noteColors = ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff', '#e8baff', '#ffc9de', '#c9f0ff'];
+
+  memories.forEach((m, i) => {
+    const note = document.createElement('div');
+    note.className = 'jar-note';
+    note.style.background = noteColors[i % noteColors.length];
+    note.style.setProperty('--dur', `${3 + Math.random() * 3}s`);
+    note.style.setProperty('--delay', `${Math.random() * 2}s`);
+    note.style.setProperty('--rot', `${Math.random() * 20 - 10}deg`);
+    note.textContent = m.emoji;
+    note.addEventListener('click', () => {
+      haptic(30);
+      showJarModal(m.emoji, m.text);
+    });
+    notesContainer.appendChild(note);
+  });
+
+  // Sparkle particles inside jar
+  for (let i = 0; i < 12; i++) {
+    const sp = document.createElement('div');
+    sp.className = 'jar-sparkle';
+    sp.style.left = `${10 + Math.random() * 80}%`;
+    sp.style.top = `${10 + Math.random() * 80}%`;
+    sp.style.setProperty('--dur', `${2 + Math.random() * 3}s`);
+    sp.style.setProperty('--delay', `${Math.random() * 3}s`);
+    sparklesContainer.appendChild(sp);
+  }
+}
+
+function showJarModal(emoji, text) {
+  const modal = document.getElementById('jarModal');
+  document.getElementById('jarModalEmoji').textContent = emoji;
+  document.getElementById('jarModalText').textContent = text;
+  modal.classList.remove('hidden');
+  launchSparks(window.innerWidth / 2, window.innerHeight / 2, 15);
+}
+
+document.getElementById('jarModalClose').addEventListener('click', () => {
+  document.getElementById('jarModal').classList.add('hidden');
+});
+document.getElementById('jarModal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) document.getElementById('jarModal').classList.add('hidden');
+});
+
+// ===== V2: ZODIAC PERSONALITY =====
+function buildZodiac() {
+  const monthsContainer = document.getElementById('zodiacMonths');
+  if (!monthsContainer) return;
+
+  const zodiacData = [
+    { month: 1, sign: 'Capricorn / Aquarius', emoji: '♑♒', dates: 'Dec 22 – Jan 19 / Jan 20 – Feb 18', traits: ['Ambitious', 'Disciplined', 'Innovative', 'Loyal'], lucky: '🎨 Lucky Color: Blue', compat: '💕 Compatible: Taurus, Virgo' },
+    { month: 2, sign: 'Aquarius / Pisces', emoji: '♒♓', dates: 'Jan 20 – Feb 18 / Feb 19 – Mar 20', traits: ['Creative', 'Dreamy', 'Compassionate', 'Intuitive'], lucky: '🎨 Lucky Color: Turquoise', compat: '💕 Compatible: Cancer, Scorpio' },
+    { month: 3, sign: 'Pisces / Aries', emoji: '♓♈', dates: 'Feb 19 – Mar 20 / Mar 21 – Apr 19', traits: ['Imaginative', 'Brave', 'Passionate', 'Gentle'], lucky: '🎨 Lucky Color: Sea Green', compat: '💕 Compatible: Leo, Sagittarius' },
+    { month: 4, sign: 'Aries / Taurus', emoji: '♈♉', dates: 'Mar 21 – Apr 19 / Apr 20 – May 20', traits: ['Bold', 'Determined', 'Reliable', 'Energetic'], lucky: '🎨 Lucky Color: Red', compat: '💕 Compatible: Leo, Gemini' },
+    { month: 5, sign: 'Taurus / Gemini', emoji: '♉♊', dates: 'Apr 20 – May 20 / May 21 – Jun 20', traits: ['Patient', 'Curious', 'Devoted', 'Charming'], lucky: '🎨 Lucky Color: Green', compat: '💕 Compatible: Virgo, Cancer' },
+    { month: 6, sign: 'Gemini / Cancer', emoji: '♊♋', dates: 'May 21 – Jun 20 / Jun 21 – Jul 22', traits: ['Versatile', 'Nurturing', 'Witty', 'Emotional'], lucky: '🎨 Lucky Color: Yellow', compat: '💕 Compatible: Libra, Pisces' },
+    { month: 7, sign: 'Cancer / Leo', emoji: '♋♌', dates: 'Jun 21 – Jul 22 / Jul 23 – Aug 22', traits: ['Caring', 'Confident', 'Protective', 'Generous'], lucky: '🎨 Lucky Color: Silver', compat: '💕 Compatible: Scorpio, Aries' },
+    { month: 8, sign: 'Leo / Virgo', emoji: '♌♍', dates: 'Jul 23 – Aug 22 / Aug 23 – Sep 22', traits: ['Charismatic', 'Analytical', 'Warm', 'Perfectionist'], lucky: '🎨 Lucky Color: Gold', compat: '💕 Compatible: Sagittarius, Gemini' },
+    { month: 9, sign: 'Virgo / Libra', emoji: '♍♎', dates: 'Aug 23 – Sep 22 / Sep 23 – Oct 22', traits: ['Thoughtful', 'Harmonious', 'Kind', 'Elegant'], lucky: '🎨 Lucky Color: Navy Blue', compat: '💕 Compatible: Taurus, Capricorn' },
+    { month: 10, sign: 'Libra / Scorpio', emoji: '♎♏', dates: 'Sep 23 – Oct 22 / Oct 23 – Nov 21', traits: ['Diplomatic', 'Mysterious', 'Artistic', 'Intense'], lucky: '🎨 Lucky Color: Pink', compat: '💕 Compatible: Aquarius, Leo' },
+    { month: 11, sign: 'Scorpio / Sagittarius', emoji: '♏♐', dates: 'Oct 23 – Nov 21 / Nov 22 – Dec 21', traits: ['Passionate', 'Adventurous', 'Resourceful', 'Optimistic'], lucky: '🎨 Lucky Color: Crimson', compat: '💕 Compatible: Cancer, Pisces' },
+    { month: 12, sign: 'Sagittarius / Capricorn', emoji: '♐♑', dates: 'Nov 22 – Dec 21 / Dec 22 – Jan 19', traits: ['Free-spirited', 'Ambitious', 'Honest', 'Philosophical'], lucky: '🎨 Lucky Color: Purple', compat: '💕 Compatible: Aries, Aquarius' },
+  ];
+
+  for (let m = 1; m <= 12; m++) {
+    const btn = document.createElement('button');
+    btn.className = 'zodiac-month-btn';
+    btn.textContent = m;
+    btn.addEventListener('click', () => {
+      monthsContainer.querySelectorAll('.zodiac-month-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      showZodiacCard(zodiacData[m - 1]);
+      haptic(30);
+    });
+    monthsContainer.appendChild(btn);
+  }
+
+  function showZodiacCard(data) {
+    const card = document.getElementById('zodiacCard');
+    document.getElementById('zodiacEmoji').textContent = data.emoji;
+    document.getElementById('zodiacName').textContent = data.sign;
+    document.getElementById('zodiacDates').textContent = data.dates;
+    const traitsEl = document.getElementById('zodiacTraits');
+    traitsEl.innerHTML = '';
+    data.traits.forEach(t => {
+      const span = document.createElement('span');
+      span.className = 'zodiac-trait';
+      span.textContent = t;
+      traitsEl.appendChild(span);
+    });
+    document.getElementById('zodiacLucky').textContent = data.lucky;
+    document.getElementById('zodiacCompat').textContent = data.compat;
+    card.classList.remove('hidden');
+    card.style.animation = 'none';
+    void card.offsetWidth;
+    card.style.animation = '';
+    launchSparks(window.innerWidth / 2, card.getBoundingClientRect().top, 12);
+  }
+}
+
+// ===== V2: BIRTHDAY COUNTDOWN =====
+function initBirthdayCountdown() {
+  const daysEl = document.getElementById('cdDays');
+  const hoursEl = document.getElementById('cdHours');
+  const minsEl = document.getElementById('cdMins');
+  const secsEl = document.getElementById('cdSecs');
+  if (!daysEl) return;
+
+  function update() {
+    const now = new Date();
+    let nextBday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    // Set next birthday as exactly 365 days from today (since we don't know actual date)
+    nextBday = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+
+    const diff = nextBday - now;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+    daysEl.textContent = String(days).padStart(3, '0');
+    hoursEl.textContent = String(hours).padStart(2, '0');
+    minsEl.textContent = String(mins).padStart(2, '0');
+    secsEl.textContent = String(secs).padStart(2, '0');
+  }
+
+  update();
+  setInterval(update, 1000);
+}
+
+// ===== V2: WISH JAR =====
+function initWishJar(name) {
+  const wrap = document.getElementById('wishjarWrap');
+  const shakeBtn = document.getElementById('wishjarShakeBtn');
+  const result = document.getElementById('wishjarResult');
+  const resultText = document.getElementById('wishjarResultText');
+  const resetBtn = document.getElementById('wishjarReset');
+  const particlesContainer = document.getElementById('wishjarParticles');
+  if (!shakeBtn) return;
+
+  const wishes = [
+    `This year, ${name}, every dream you have will come true ✨`,
+    `May your life overflow with love, laughter, and endless adventures 🌟`,
+    `Someone special is thinking about you right now and always will 💕`,
+    `A year full of beautiful surprises awaits you, ${name} 🎁`,
+    `Your smile has the power to change the world — never stop smiling 😊`,
+    `The universe is conspiring to bring you everything you deserve 🌌`,
+    `This is your year to shine brighter than ever before, ${name} 👑`,
+    `Love will find you in unexpected places this year 🌹`,
+    `Every wish you make tonight will come true — I promise 🌙`,
+    `You are destined for greatness, and this year proves it 🚀`,
+  ];
+
+  // Add particles inside jar
+  const pColors = ['rgba(168,85,247,0.6)', 'rgba(255,110,180,0.5)', 'rgba(255,215,0,0.5)', 'rgba(232,168,124,0.4)'];
+  for (let i = 0; i < 15; i++) {
+    const p = document.createElement('div');
+    p.className = 'wishjar-particle';
+    const size = 3 + Math.random() * 5;
+    p.style.cssText = `
+      width:${size}px;height:${size}px;
+      background:${pColors[Math.floor(Math.random() * pColors.length)]};
+      left:${10 + Math.random() * 80}%;
+      top:${20 + Math.random() * 60}%;
+      border-radius:50%;
+      --dur:${3 + Math.random() * 4}s;
+      --delay:${Math.random() * 3}s;
+    `;
+    particlesContainer.appendChild(p);
+  }
+
+  shakeBtn.addEventListener('click', () => {
+    // Shake animation
+    wrap.classList.add('shaking');
+    haptic(80);
+    setTimeout(() => wrap.classList.remove('shaking'), 600);
+
+    setTimeout(() => {
+      const wish = wishes[Math.floor(Math.random() * wishes.length)];
+      resultText.textContent = wish;
+      result.classList.remove('hidden');
+      result.style.animation = 'none';
+      void result.offsetWidth;
+      result.style.animation = '';
+      resetBtn.classList.remove('hidden');
+      shakeBtn.classList.add('hidden');
+      launchConfetti(80);
+      burstFireworks(3);
+    }, 700);
+  });
+
+  resetBtn.addEventListener('click', () => {
+    result.classList.add('hidden');
+    resetBtn.classList.add('hidden');
+    shakeBtn.classList.remove('hidden');
+  });
+}
+
+// ===== V2: HEART BEAT SYNC =====
+function initHeartBeatSync(name) {
+  const bpmEl = document.getElementById('bpmNum');
+  const textEl = document.getElementById('heartbeatText');
+  if (!bpmEl) return;
+
+  textEl.textContent = `My heart beats only for you, ${name}`;
+  let running = false;
+
+  const obs = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting && !running) {
+      running = true;
+      let bpm = 0;
+      const target = 143; // "I Love You" = 143
+      const interval = setInterval(() => {
+        bpm += Math.ceil(Math.random() * 5) + 2;
+        if (bpm >= target) {
+          bpm = target;
+          clearInterval(interval);
+          bpmEl.textContent = bpm;
+          showToast(`💓 143 = I Love You, ${name}!`);
+          haptic(50);
+        }
+        bpmEl.textContent = bpm;
+      }, 30);
+    }
+  }, { threshold: 0.3 });
+  obs.observe(bpmEl.parentElement.parentElement);
+}
+
+// ===== V2: SHOOTING STARS (Final Section) =====
+function initShootingStars() {
+  const container = document.getElementById('shootingStarsBg');
+  if (!container) return;
+
+  for (let i = 0; i < 6; i++) {
+    const star = document.createElement('div');
+    star.className = 'shooting-star';
+    star.style.top = `${Math.random() * 40}%`;
+    star.style.left = `-120px`;
+    star.style.setProperty('--dur', `${4 + Math.random() * 6}s`);
+    star.style.setProperty('--delay', `${i * 2 + Math.random() * 3}s`);
+    star.style.width = `${60 + Math.random() * 80}px`;
+    container.appendChild(star);
+  }
+}
+
+// ===== V2: FINAL FLOATING HEARTS =====
+function initFinalFloatingHearts() {
+  const container = document.getElementById('finalFloatingHearts');
+  if (!container) return;
+
+  const hearts = ['💕', '💖', '💗', '💝', '🩷', '🤍'];
+  for (let i = 0; i < 12; i++) {
+    const h = document.createElement('div');
+    h.className = 'final-float-heart';
+    h.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+    h.style.left = `${Math.random() * 100}%`;
+    h.style.setProperty('--size', `${0.8 + Math.random() * 1.2}rem`);
+    h.style.setProperty('--dur', `${6 + Math.random() * 8}s`);
+    h.style.setProperty('--delay', `${Math.random() * 8}s`);
+    container.appendChild(h);
+  }
+}
+
+// ===== V2: POLAROID DOUBLE-TAP HEART =====
+(function() {
+  let lastPolaroidTap = 0;
+  document.addEventListener('click', (e) => {
+    const card = e.target.closest('.polaroid-card');
+    if (!card) return;
+    const now = Date.now();
+    if (now - lastPolaroidTap < 350) {
+      // Double tap on polaroid — Instagram heart
+      const rect = card.getBoundingClientRect();
+      const heart = document.createElement('div');
+      heart.className = 'polaroid-heart';
+      heart.textContent = '❤️';
+      heart.style.left = `${e.clientX - rect.left - 20}px`;
+      heart.style.top = `${e.clientY - rect.top - 20}px`;
+      card.appendChild(heart);
+      setTimeout(() => heart.remove(), 900);
+      haptic(30);
+    }
+    lastPolaroidTap = now;
+  });
+})();

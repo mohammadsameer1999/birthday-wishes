@@ -24,7 +24,7 @@
     <canvas id="nebulaCanvas"></canvas>
     <div class="rose-petals" id="rosePetals"></div>
     <div class="intro-content">
-      <div class="magic-text">Someone special sent you something...</div>
+      <div class="magic-text" id="magicText"></div>
       <div class="envelope-wrap" id="envelopeWrap">
         <div class="envelope-3d" id="envelope3d">
           <div class="envelope" id="envelope">
@@ -62,6 +62,21 @@
         </button>
       </div>
     </div>
+  </div>
+
+  <!-- ============================================
+       LOADING SCREEN
+       ============================================ -->
+  <div class="loading-screen hidden" id="loadingScreen">
+    <div class="loading-heart-wrap">
+      <div class="loading-heart">💖</div>
+      <svg class="loading-ring" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="45" class="loading-ring-bg"/>
+        <circle cx="50" cy="50" r="45" class="loading-ring-fill" id="loadingRingFill"/>
+      </svg>
+    </div>
+    <p class="loading-text" id="loadingText">Loading your surprises</p>
+    <div class="loading-dots"><span>.</span><span>.</span><span>.</span></div>
   </div>
 
   <!-- ============================================
@@ -216,16 +231,56 @@
         <div class="wishes-track" id="wishesTrack"></div>
       </section>
 
+      <!-- ===== ROMANTIC TRIVIA QUIZ ===== -->
+      <section class="trivia-section" id="triviaSection">
+        <div class="section-label"><span class="label-icon">💭</span> How Well Do You Know Me?</div>
+        <div class="trivia-container" id="triviaContainer"></div>
+        <div class="trivia-score hidden" id="triviaScore"></div>
+      </section>
+
       <!-- ===== CELEBRATION GRID ===== -->
       <section class="memory-section">
         <div class="section-label"><span class="label-icon">✨</span> Celebrate Together</div>
         <div class="memory-grid" id="memoryGrid"></div>
       </section>
 
+      <!-- ===== CONFETTI CANNON ===== -->
+      <section class="cannon-section" id="cannonSection">
+        <div class="section-label"><span class="label-icon">🎊</span> Ready to Celebrate?</div>
+        <button class="cannon-btn" id="cannonBtn">
+          <span class="cannon-icon">🎉</span>
+          <span class="cannon-text">CELEBRATE!</span>
+          <div class="cannon-glow"></div>
+        </button>
+        <p class="cannon-hint">Tap for maximum celebration!</p>
+      </section>
+
       <!-- ===== PHOTO MEMORIES ===== -->
       <section class="polaroid-section" id="polaroidSection">
         <div class="section-label"><span class="label-icon">📸</span> Moments That Matter</div>
         <div class="polaroid-grid" id="polaroidGrid"></div>
+      </section>
+
+      <!-- ===== MEMORY JAR ===== -->
+      <section class="jar-section" id="jarSection">
+        <div class="section-label"><span class="label-icon">🫙</span> Memory Jar</div>
+        <p class="jar-sub">Tap the notes to read sweet memories</p>
+        <div class="jar-wrap" id="jarWrap">
+          <div class="jar-cork"></div>
+          <div class="jar-body">
+            <div class="jar-shine"></div>
+            <div class="jar-notes" id="jarNotes"></div>
+            <div class="jar-sparkles" id="jarSparkles"></div>
+          </div>
+          <div class="jar-base"></div>
+        </div>
+        <div class="jar-modal hidden" id="jarModal">
+          <div class="jar-modal-card" id="jarModalCard">
+            <span class="jar-modal-close" id="jarModalClose">&times;</span>
+            <span class="jar-modal-emoji" id="jarModalEmoji"></span>
+            <p class="jar-modal-text" id="jarModalText"></p>
+          </div>
+        </div>
       </section>
 
       <!-- ===== AGE ===== -->
@@ -243,9 +298,60 @@
         <div class="age-candles" id="ageCandles"></div>
       </section>
 
+      <!-- ===== ZODIAC PERSONALITY ===== -->
+      <section class="zodiac-section" id="zodiacSection">
+        <div class="section-label"><span class="label-icon">🔮</span> Your Star Sign</div>
+        <p class="zodiac-sub">Select your birth month to discover your cosmic personality</p>
+        <div class="zodiac-months" id="zodiacMonths"></div>
+        <div class="zodiac-card hidden" id="zodiacCard">
+          <div class="zodiac-emoji" id="zodiacEmoji"></div>
+          <h3 class="zodiac-name" id="zodiacName"></h3>
+          <p class="zodiac-dates" id="zodiacDates"></p>
+          <div class="zodiac-traits" id="zodiacTraits"></div>
+          <div class="zodiac-extra">
+            <span class="zodiac-lucky" id="zodiacLucky"></span>
+            <span class="zodiac-compat" id="zodiacCompat"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== COUNTDOWN TO NEXT BIRTHDAY ===== -->
+      <section class="countdown-section" id="countdownSection">
+        <div class="section-label"><span class="label-icon">⏳</span> Next Birthday In</div>
+        <div class="countdown-grid" id="countdownGrid">
+          <div class="cd-unit">
+            <span class="cd-num" id="cdDays">000</span>
+            <span class="cd-label">Days</span>
+          </div>
+          <div class="cd-sep">:</div>
+          <div class="cd-unit">
+            <span class="cd-num" id="cdHours">00</span>
+            <span class="cd-label">Hours</span>
+          </div>
+          <div class="cd-sep">:</div>
+          <div class="cd-unit">
+            <span class="cd-num" id="cdMins">00</span>
+            <span class="cd-label">Minutes</span>
+          </div>
+          <div class="cd-sep">:</div>
+          <div class="cd-unit">
+            <span class="cd-num" id="cdSecs">00</span>
+            <span class="cd-label">Seconds</span>
+          </div>
+        </div>
+        <p class="countdown-msg">Until your next celebration! 🎉</p>
+      </section>
+
       <!-- Music Toggle -->
       <div class="music-float" id="musicToggle">
-        <span>🎵</span>
+        <svg class="music-progress-ring" viewBox="0 0 52 52">
+          <circle cx="26" cy="26" r="24" class="music-ring-bg"/>
+          <circle cx="26" cy="26" r="24" class="music-ring-fill" id="musicRingFill"/>
+        </svg>
+        <span class="music-emoji">🎵</span>
+        <div class="music-bars" id="musicBars">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
         <div class="music-label">Heeriye — Arijit Singh</div>
       </div>
 
@@ -274,10 +380,54 @@
         <p class="fortune-hint">Tap the magic ball to reveal your fortune!</p>
       </section>
 
+      <!-- ===== WISH JAR ===== -->
+      <section class="wishjar-section" id="wishjarSection">
+        <div class="section-label"><span class="label-icon">✨</span> Magic Wish Jar</div>
+        <p class="wishjar-sub">Shake the jar to release a wish!</p>
+        <div class="wishjar-wrap" id="wishjarWrap">
+          <div class="wishjar-lid"></div>
+          <div class="wishjar-glass">
+            <div class="wishjar-particles" id="wishjarParticles"></div>
+            <div class="wishjar-glow"></div>
+          </div>
+          <div class="wishjar-base"></div>
+        </div>
+        <button class="wishjar-shake-btn" id="wishjarShakeBtn">🫨 Shake the Jar!</button>
+        <div class="wishjar-result hidden" id="wishjarResult">
+          <span class="wishjar-result-emoji">✨</span>
+          <p class="wishjar-result-text" id="wishjarResultText"></p>
+        </div>
+        <button class="wishjar-reset hidden" id="wishjarReset">🔄 Try Again</button>
+      </section>
+
       <!-- ===== I LOVE YOU — MULTIPLE LANGUAGES ===== -->
       <section class="iloveyou-section" id="iloveyouSection">
         <div class="section-label"><span class="label-icon">🌍</span> I Love You, In Every Language</div>
         <div class="iloveyou-display" id="iloveyouDisplay"></div>
+      </section>
+
+      <!-- ===== HEART BEAT SYNC ===== -->
+      <section class="heartbeat-section" id="heartbeatSection">
+        <div class="section-label"><span class="label-icon">💓</span> My Heart Beats For You</div>
+        <div class="heartbeat-wrap">
+          <div class="heartbeat-waves">
+            <span class="hb-wave"></span>
+            <span class="hb-wave"></span>
+            <span class="hb-wave"></span>
+          </div>
+          <div class="heartbeat-big">❤️</div>
+          <div class="heartbeat-waves right">
+            <span class="hb-wave"></span>
+            <span class="hb-wave"></span>
+            <span class="hb-wave"></span>
+          </div>
+        </div>
+        <div class="heartbeat-bpm">
+          <span class="bpm-icon">💓</span>
+          <span class="bpm-num" id="bpmNum">0</span>
+          <span class="bpm-label">BPM</span>
+        </div>
+        <p class="heartbeat-text" id="heartbeatText">My heart beats only for you</p>
       </section>
 
       <!-- ===== PARTICLE HEART ===== -->
@@ -296,6 +446,7 @@
 
       <!-- ===== FINAL SECTION ===== -->
       <section class="final-section" id="finalSection">
+        <div class="shooting-stars-bg" id="shootingStarsBg"></div>
         <div class="final-wrap">
           <div class="final-heart-beat">💕</div>
           <div class="butterfly-release" id="butterflyRelease"></div>
@@ -312,7 +463,8 @@
             <button class="share-btn" id="shareBtn">📸 Screenshot & Share!</button>
             <button class="share-btn whatsapp-btn" id="whatsappBtn">💬 Send on WhatsApp</button>
           </div>
-          <p class="made-with">Made with all my love, just for you 💕</p>
+          <p class="made-with">Made with all my love, just for you 💕 <span id="currentYear"></span></p>
+          <div class="final-floating-hearts" id="finalFloatingHearts"></div>
         </div>
       </section>
 
