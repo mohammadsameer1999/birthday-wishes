@@ -197,7 +197,14 @@
       <!-- ===== LOVE LETTER ===== -->
       <section class="letter-section" id="letterSection">
         <div class="section-label"><span class="label-icon">💌</span> A Letter From My Heart</div>
-        <div class="letter-paper" id="letterPaper">
+
+        <!-- Heart animation - particles assemble into a big heart, tap to open letter -->
+        <div class="letter-heart-gate" id="letterHeartGate">
+          <canvas id="heartAssembleCanvas"></canvas>
+          <p class="letter-heart-hint" id="letterHeartHint">Tap the heart to open my letter 💌</p>
+        </div>
+
+        <div class="letter-paper letter-paper-hidden" id="letterPaper">
           <div class="letter-petals" id="letterPetals"></div>
           <div class="letter-stamp">♥</div>
           <div class="letter-wax-seal">💕</div>

@@ -901,16 +901,14 @@ function startTypewriter(name) {
   let i = 0;
   el.textContent = '';
   const sign = document.querySelector('.letter-sign');
+  const heartGate = document.getElementById('letterHeartGate');
+  const letterPaper = document.getElementById('letterPaper');
 
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        observer.disconnect();
-        typeNext();
-      }
-    });
-  }, { threshold: 0.3 });
-  observer.observe(el);
+  // Init the particle heart canvas
+  initHeartAssembleCanvas(heartGate, letterPaper, () => {
+    // This callback runs when letter should open
+    setTimeout(() => typeNext(), 600);
+  });
 
   function typeNext() {
     if (i < text.length) {
@@ -922,6 +920,271 @@ function startTypewriter(name) {
       sign.classList.add('show');
     }
   }
+}
+
+// ===== PARTICLE HEART ASSEMBLE CANVAS =====
+function initHeartAssembleCanvas(heartGate, letterPaper, onOpenCallback) {
+  const canvas = document.getElementById('heartAssembleCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+
+  // Size canvas
+  const W = 420, H = 420;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
+
+  const cx = W / 2, cy = H / 2;
+
+  // Heart shape points generator
+  function heartPoints(count, scale) {
+    const pts = [];
+    for (let i = 0; i < count; i++) {
+      const t = (i / count) * Math.PI * 2;
+      const x = 16 * Math.pow(Math.sin(t), 3);
+      const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+      pts.push({ x: cx + x * scale, y: cy + y * scale - 10 });
+    }
+    return pts;
+  }
+
+  // Also fill inside the heart with random points
+  function heartFillPoints(count, scale) {
+    const pts = [];
+    let attempts = 0;
+    while (pts.length < count && attempts < count * 20) {
+      attempts++;
+      const rx = (Math.random() - 0.5) * 2;
+      const ry = (Math.random() - 0.5) * 2;
+      // Check if point is inside heart using parametric approximation
+      const px = rx * 18 * scale;
+      const py = ry * 18 * scale;
+      if (isInsideHeart(px / scale, py / scale)) {
+        pts.push({ x: cx + px, y: cy + py - 10 });
+      }
+    }
+    return pts;
+  }
+
+  function isInsideHeart(x, y) {
+    // Implicit heart equation: (x^2 + y^2 - 1)^3 - x^2 * y^3 < 0
+    const xx = x / 17, yy = -(y / 17);
+    const a = xx*xx + yy*yy - 1;
+    return (a*a*a - xx*xx*yy*yy*yy) < 0;
+  }
+
+  const SCALE = 11;
+  const outlineTargets = heartPoints(180, SCALE);
+  const fillTargets = heartFillPoints(250, SCALE);
+  const allTargets = [...outlineTargets, ...fillTargets];
+  const total = allTargets.length;
+
+  // Create particles — start from random scattered positions
+  const particles = allTargets.map((target, i) => {
+    const isOutline = i < outlineTargets.length;
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 200 + Math.random() * 250;
+    return {
+      x: cx + Math.cos(angle) * dist,
+      y: cy + Math.sin(angle) * dist,
+      tx: target.x,
+      ty: target.y,
+      size: isOutline ? (2 + Math.random() * 2.5) : (1.5 + Math.random() * 2),
+      isOutline,
+      // Stagger: outline first, then fill
+      delay: isOutline ? (i / outlineTargets.length) * 2000 : (2000 + ((i - outlineTargets.length) / fillTargets.length) * 2500),
+      arrived: false,
+      alpha: 0,
+      hue: 330 + Math.random() * 30, // pink-red range
+      sat: 80 + Math.random() * 20,
+      light: isOutline ? (55 + Math.random() * 15) : (45 + Math.random() * 25),
+      vx: 0,
+      vy: 0,
+      wobblePhase: Math.random() * Math.PI * 2,
+      wobbleSpeed: 0.02 + Math.random() * 0.02,
+      wobbleAmp: 1 + Math.random() * 2,
+    };
+  });
+
+  // Ambient floating sparkles (always float around)
+  const sparkles = [];
+  for (let i = 0; i < 40; i++) {
+    sparkles.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      size: 0.5 + Math.random() * 2,
+      speed: 0.2 + Math.random() * 0.5,
+      alpha: 0,
+      alphaDir: 0.005 + Math.random() * 0.01,
+      drift: Math.random() * Math.PI * 2,
+    });
+  }
+
+  let startTime = null;
+  let assembled = false;
+  let tapped = false;
+  let explodeTime = null;
+  let pulsePhase = 0;
+  let glowAlpha = 0;
+
+  // Animation loop
+  function animate(timestamp) {
+    if (!startTime) startTime = timestamp;
+    const elapsed = timestamp - startTime;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // --- Draw ambient sparkles ---
+    sparkles.forEach(s => {
+      s.y -= s.speed;
+      s.x += Math.sin(s.drift) * 0.3;
+      s.drift += 0.01;
+      s.alpha += s.alphaDir;
+      if (s.alpha > 0.8 || s.alpha < 0) s.alphaDir *= -1;
+      s.alpha = Math.max(0, Math.min(0.8, s.alpha));
+      if (s.y < -5) { s.y = H + 5; s.x = Math.random() * W; }
+
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,180,220,${s.alpha})`;
+      ctx.fill();
+    });
+
+    if (tapped && explodeTime) {
+      // --- EXPLODE OUTWARD ---
+      const explodeElapsed = timestamp - explodeTime;
+      let allGone = true;
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.15; // gravity
+        p.alpha *= 0.97;
+        if (p.alpha > 0.01) {
+          allGone = false;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${p.hue},${p.sat}%,${p.light}%,${p.alpha})`;
+          ctx.shadowColor = `hsla(${p.hue},100%,60%,${p.alpha * 0.5})`;
+          ctx.shadowBlur = 6;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+      });
+
+      if (allGone || explodeElapsed > 2000) {
+        heartGate.classList.add('opened');
+        letterPaper.classList.add('letter-paper-show');
+        onOpenCallback();
+        return; // Stop animation
+      }
+
+      requestAnimationFrame(animate);
+      return;
+    }
+
+    // --- ASSEMBLE PHASE ---
+    let arrivedCount = 0;
+
+    particles.forEach(p => {
+      if (elapsed < p.delay) {
+        // Not yet started — stay invisible
+        p.alpha = 0;
+      } else {
+        const t = Math.min(1, (elapsed - p.delay) / 1500);
+        // Easing — cubic ease out
+        const ease = 1 - Math.pow(1 - t, 3);
+
+        // Lerp to target
+        p.x = p.x + (p.tx - p.x) * 0.06;
+        p.y = p.y + (p.ty - p.y) * 0.06;
+        p.alpha = Math.min(1, t * 1.5);
+
+        if (t >= 1) {
+          p.arrived = true;
+          arrivedCount++;
+          // Gentle wobble after arriving
+          p.wobblePhase += p.wobbleSpeed;
+          const wobX = Math.sin(p.wobblePhase) * p.wobbleAmp;
+          const wobY = Math.cos(p.wobblePhase * 0.7) * p.wobbleAmp;
+          p.x = p.tx + wobX;
+          p.y = p.ty + wobY;
+        }
+      }
+
+      if (p.alpha > 0) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.hue},${p.sat}%,${p.light}%,${p.alpha})`;
+        // Glow effect for outline particles
+        if (p.isOutline) {
+          ctx.shadowColor = `hsla(${p.hue},100%,60%,${p.alpha * 0.6})`;
+          ctx.shadowBlur = 8;
+        }
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    });
+
+    // Check if heart is fully assembled
+    if (!assembled && arrivedCount >= total * 0.9) {
+      assembled = true;
+      // Show hint
+      const hint = document.getElementById('letterHeartHint');
+      if (hint) hint.classList.add('visible');
+    }
+
+    // Pulsing glow behind heart once assembled
+    if (assembled) {
+      pulsePhase += 0.03;
+      glowAlpha = 0.08 + Math.sin(pulsePhase) * 0.06;
+      const grad = ctx.createRadialGradient(cx, cy - 10, 20, cx, cy - 10, 180);
+      grad.addColorStop(0, `rgba(255,45,117,${glowAlpha * 2})`);
+      grad.addColorStop(0.5, `rgba(255,110,180,${glowAlpha})`);
+      grad.addColorStop(1, 'rgba(255,45,117,0)');
+
+      // Draw glow behind particles
+      ctx.globalCompositeOperation = 'destination-over';
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+      ctx.globalCompositeOperation = 'source-over';
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  // Start when section is visible
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        observer.disconnect();
+        requestAnimationFrame(animate);
+      }
+    });
+  }, { threshold: 0.2 });
+  observer.observe(canvas);
+
+  // Tap handler
+  heartGate.addEventListener('click', function onTap() {
+    if (!assembled || tapped) return;
+    heartGate.removeEventListener('click', onTap);
+    tapped = true;
+    haptic(80);
+
+    // Explode particles outward from center
+    explodeTime = performance.now();
+    particles.forEach(p => {
+      const dx = p.x - cx;
+      const dy = p.y - (cy - 10);
+      const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+      const speed = 8 + Math.random() * 12;
+      p.vx = (dx / dist) * speed + (Math.random() - 0.5) * 4;
+      p.vy = (dy / dist) * speed + (Math.random() - 0.5) * 4 - 3;
+      p.alpha = 1;
+    });
+  });
 }
 
 // ===== AGE COUNTER =====
