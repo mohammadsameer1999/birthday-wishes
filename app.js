@@ -1,138 +1,7 @@
 /* =============================================
    BIRTHDAY WISHES — Romantic Premium Edition
+   Name "saba" is hardcoded — no intro/envelope/name screens
    ============================================= */
-
-// ===== NEBULA CANVAS (Intro Background) =====
-const nebulaCanvas = document.getElementById('nebulaCanvas');
-const nCtx = nebulaCanvas.getContext('2d');
-let nebulaRunning = true;
-
-function initNebula() {
-  nebulaCanvas.width = window.innerWidth;
-  nebulaCanvas.height = window.innerHeight;
-
-  const stars = [];
-  for (let i = 0; i < 200; i++) {
-    stars.push({
-      x: Math.random() * nebulaCanvas.width,
-      y: Math.random() * nebulaCanvas.height,
-      r: Math.random() * 1.5 + 0.3,
-      alpha: Math.random(),
-      da: (Math.random() - 0.5) * 0.02,
-    });
-  }
-
-  const nebulae = [];
-  const nColors = [
-    [255, 45, 117],   // rose
-    [168, 85, 247],   // purple
-    [232, 168, 124],  // rosegold
-    [255, 110, 180],  // pink
-    [124, 58, 237],   // violet
-  ];
-  for (let i = 0; i < 5; i++) {
-    nebulae.push({
-      x: Math.random() * nebulaCanvas.width,
-      y: Math.random() * nebulaCanvas.height,
-      r: 150 + Math.random() * 200,
-      color: nColors[i],
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: (Math.random() - 0.5) * 0.3,
-    });
-  }
-
-  function drawNebula() {
-    if (!nebulaRunning) return;
-    nCtx.fillStyle = 'rgba(5,0,16,0.15)';
-    nCtx.fillRect(0, 0, nebulaCanvas.width, nebulaCanvas.height);
-
-    // Nebula clouds
-    nebulae.forEach(n => {
-      n.x += n.vx;
-      n.y += n.vy;
-      if (n.x < -n.r) n.x = nebulaCanvas.width + n.r;
-      if (n.x > nebulaCanvas.width + n.r) n.x = -n.r;
-      if (n.y < -n.r) n.y = nebulaCanvas.height + n.r;
-      if (n.y > nebulaCanvas.height + n.r) n.y = -n.r;
-
-      const grad = nCtx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r);
-      grad.addColorStop(0, `rgba(${n.color[0]},${n.color[1]},${n.color[2]},0.04)`);
-      grad.addColorStop(1, 'transparent');
-      nCtx.fillStyle = grad;
-      nCtx.fillRect(0, 0, nebulaCanvas.width, nebulaCanvas.height);
-    });
-
-    // Stars
-    stars.forEach(s => {
-      s.alpha += s.da;
-      if (s.alpha <= 0 || s.alpha >= 1) s.da *= -1;
-      s.alpha = Math.max(0, Math.min(1, s.alpha));
-
-      nCtx.beginPath();
-      nCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      nCtx.fillStyle = `rgba(255,255,255,${s.alpha * 0.8})`;
-      nCtx.fill();
-    });
-
-    requestAnimationFrame(drawNebula);
-  }
-  drawNebula();
-}
-initNebula();
-
-window.addEventListener('resize', () => {
-  nebulaCanvas.width = window.innerWidth;
-  nebulaCanvas.height = window.innerHeight;
-});
-
-// ===== INTRO TYPEWRITER =====
-const magicTextEl = document.getElementById('magicText');
-const introFullText = 'Someone special sent you something...';
-let introCharIdx = 0;
-function typeIntro() {
-  if (introCharIdx < introFullText.length) {
-    magicTextEl.textContent += introFullText.charAt(introCharIdx);
-    introCharIdx++;
-    setTimeout(typeIntro, 60);
-  } else {
-    magicTextEl.classList.add('done');
-  }
-}
-typeIntro();
-
-// ===== ROSE PETALS (Intro) =====
-const rosePetals = document.getElementById('rosePetals');
-for (let i = 0; i < 20; i++) {
-  const p = document.createElement('div');
-  p.className = 'petal';
-  p.style.cssText = `
-    left:${Math.random() * 100}%;
-    width:${14 + Math.random() * 12}px;
-    height:${10 + Math.random() * 10}px;
-    --dur:${8 + Math.random() * 10}s;
-    --delay:${Math.random() * 10}s;
-    --rot:${Math.random() * 540 - 270}deg;
-    --sway:${Math.random() * 100 - 50}px;
-    opacity:0;
-  `;
-  rosePetals.appendChild(p);
-}
-
-// ===== 3D PARALLAX ENVELOPE (mouse follow) =====
-const envelopeWrap = document.getElementById('envelopeWrap');
-const envelope3d = document.getElementById('envelope3d');
-
-if (window.matchMedia('(hover: hover)').matches) {
-  document.addEventListener('mousemove', (e) => {
-    if (!envelope3d || !envelopeWrap.offsetParent) return;
-    const rect = envelopeWrap.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const dx = (e.clientX - cx) / rect.width;
-    const dy = (e.clientY - cy) / rect.height;
-    envelope3d.style.transform = `rotateY(${dx * 15}deg) rotateX(${-dy * 15}deg)`;
-  });
-}
 
 // ===== CURSOR TRAIL (Desktop) =====
 const cursorTrail = document.getElementById('cursorTrail');
@@ -158,174 +27,52 @@ if (window.matchMedia('(hover: hover)').matches) {
   });
 }
 
-// ===== ENVELOPE CLICK =====
-const intro = document.getElementById('intro');
-const envelopeFlap = document.getElementById('envelopeFlap');
-const envelopeLetter = document.getElementById('envelopeLetter');
-const screenName = document.getElementById('screenName');
-
-envelopeWrap.addEventListener('click', () => {
-  haptic(50);
-  envelopeFlap.classList.add('open');
-  setTimeout(() => envelopeLetter.classList.add('rise'), 400);
-  setTimeout(() => {
-    intro.classList.add('exit');
-    setTimeout(() => {
-      intro.style.display = 'none';
-      nebulaRunning = false;
-      screenName.classList.remove('hidden');
-      screenName.style.animation = 'fadeInUp 0.8s ease both';
-      initHeartCanvas();
-      initFloatingHearts();
-    }, 1200);
-  }, 1000);
-});
-
-// ===== FLOATING HEARTS (Name screen) =====
-function initFloatingHearts() {
-  const container = document.getElementById('floatingHearts');
-  const hearts = ['💖', '💕', '💗', '💝', '🩷', '🤍', '💜', '🌹'];
-  for (let i = 0; i < 25; i++) {
-    const h = document.createElement('div');
-    h.className = 'float-heart';
-    h.textContent = hearts[Math.floor(Math.random() * hearts.length)];
-    h.style.cssText = `
-      left:${Math.random() * 100}%;
-      --size:${1 + Math.random() * 1.5}rem;
-      --dur:${6 + Math.random() * 8}s;
-      --delay:${Math.random() * 6}s;
-      --rot:${Math.random() * 360}deg;
-    `;
-    container.appendChild(h);
-  }
-}
-
-// ===== HEART CANVAS (Name screen) =====
-let heartCtx, heartCanvas;
-function initHeartCanvas() {
-  heartCanvas = document.getElementById('heartCanvas');
-  heartCtx = heartCanvas.getContext('2d');
-  heartCanvas.width = window.innerWidth;
-  heartCanvas.height = window.innerHeight;
-  const hearts = [];
-  for (let i = 0; i < 40; i++) {
-    hearts.push({
-      x: Math.random() * heartCanvas.width,
-      y: Math.random() * heartCanvas.height,
-      size: Math.random() * 15 + 5,
-      speed: Math.random() * 0.5 + 0.2,
-      opacity: Math.random() * 0.12 + 0.02,
-      hue: Math.random() * 40 + 330,
-    });
-  }
-  function drawHeart(cx, cy, size) {
-    heartCtx.beginPath();
-    const topCurve = size * 0.3;
-    heartCtx.moveTo(cx, cy + size * 0.3);
-    heartCtx.bezierCurveTo(cx, cy, cx - size, cy, cx - size, cy + topCurve);
-    heartCtx.bezierCurveTo(cx - size, cy + size * 0.75, cx, cy + size, cx, cy + size * 1.2);
-    heartCtx.bezierCurveTo(cx, cy + size, cx + size, cy + size * 0.75, cx + size, cy + topCurve);
-    heartCtx.bezierCurveTo(cx + size, cy, cx, cy, cx, cy + size * 0.3);
-    heartCtx.closePath();
-  }
-  function animateHearts() {
-    heartCtx.clearRect(0, 0, heartCanvas.width, heartCanvas.height);
-    hearts.forEach(h => {
-      h.y -= h.speed;
-      if (h.y < -30) { h.y = heartCanvas.height + 30; h.x = Math.random() * heartCanvas.width; }
-      heartCtx.save();
-      heartCtx.globalAlpha = h.opacity;
-      heartCtx.fillStyle = `hsl(${h.hue}, 80%, 70%)`;
-      drawHeart(h.x, h.y, h.size);
-      heartCtx.fill();
-      heartCtx.restore();
-    });
-    requestAnimationFrame(animateHearts);
-  }
-  animateHearts();
-}
-
-// ===== NAME INPUT =====
-const nameInput = document.getElementById('nameInput');
-const nameBtn = document.getElementById('nameBtn');
+// ===== AUTO-START WITH NAME "saba" =====
 const screenMain = document.getElementById('screenMain');
+const FIXED_NAME = 'saba';
 
-function startBirthday(name) {
-  if (!name.trim()) { showToast('Enter their name first! 💕'); return; }
-  const n = name.trim();
-
-  // Smooth transition to loading screen
-  screenName.style.animation = 'none';
-  screenName.style.transition = 'opacity 0.8s, filter 0.8s, transform 0.8s';
-  screenName.style.opacity = '0';
-  screenName.style.filter = 'blur(20px)';
-  screenName.style.transform = 'scale(1.05)';
-
+// Start immediately — show loading then main screen
+(function autoStart() {
   const loadingScreen = document.getElementById('loadingScreen');
   const loadingRingFill = document.getElementById('loadingRingFill');
   const loadingTexts = ['Loading your surprises', 'Preparing the magic', 'Gathering love', 'Almost ready'];
   const loadingTextEl = document.getElementById('loadingText');
   let ltIdx = 0;
 
+  // Show loading screen right away
+  loadingScreen.classList.remove('hidden');
+  requestAnimationFrame(() => {
+    loadingRingFill.style.strokeDashoffset = '0';
+  });
+
+  const ltInterval = setInterval(() => {
+    ltIdx = (ltIdx + 1) % loadingTexts.length;
+    loadingTextEl.textContent = loadingTexts[ltIdx];
+  }, 600);
+
   setTimeout(() => {
-    screenName.classList.add('hidden');
-    screenName.style.cssText = '';
-    loadingScreen.classList.remove('hidden');
+    clearInterval(ltInterval);
+    loadingScreen.style.transition = 'opacity 0.6s, filter 0.6s';
+    loadingScreen.style.opacity = '0';
+    loadingScreen.style.filter = 'blur(10px)';
 
-    // Animate loading ring
-    requestAnimationFrame(() => {
-      loadingRingFill.style.strokeDashoffset = '0';
-    });
-
-    // Cycle loading text
-    const ltInterval = setInterval(() => {
-      ltIdx = (ltIdx + 1) % loadingTexts.length;
-      loadingTextEl.textContent = loadingTexts[ltIdx];
-    }, 600);
-
-    // After loading completes
     setTimeout(() => {
-      clearInterval(ltInterval);
-      loadingScreen.style.transition = 'opacity 0.6s, filter 0.6s';
-      loadingScreen.style.opacity = '0';
-      loadingScreen.style.filter = 'blur(10px)';
+      loadingScreen.classList.add('hidden');
+      loadingScreen.style.cssText = '';
+      screenMain.classList.remove('hidden');
+      screenMain.style.animation = 'fadeInUp 0.6s ease both';
+      initParticles();
+      initScrollReveal();
+      runCountdown(FIXED_NAME);
+    }, 600);
+  }, 2200);
+})();
 
-      setTimeout(() => {
-        loadingScreen.classList.add('hidden');
-        loadingScreen.style.cssText = '';
-        screenMain.classList.remove('hidden');
-        screenMain.style.animation = 'fadeInUp 0.6s ease both';
-        initParticles();
-        initSongVisualizer();
-        initScrollReveal();
-        runCountdown(n);
-      }, 600);
-    }, 2200);
-  }, 800);
-}
-
-nameBtn.addEventListener('click', () => startBirthday(nameInput.value));
-nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') startBirthday(nameInput.value); });
-
-// ===== SONG VISUALIZER BARS =====
-function initSongVisualizer() {
-  const viz = document.getElementById('songVisualizer');
-  for (let i = 0; i < 30; i++) {
-    const bar = document.createElement('div');
-    bar.className = 'viz-bar';
-    bar.style.cssText = `
-      --d:${0.3 + Math.random() * 0.8}s;
-      --h1:${5 + Math.random() * 15}px;
-      --h2:${20 + Math.random() * 40}px;
-      animation-delay:${Math.random()}s;
-    `;
-    viz.appendChild(bar);
-  }
-}
+// (Song visualizer removed)
 
 // ===== SCROLL REVEAL =====
 function initScrollReveal() {
-  const sections = document.querySelectorAll('.love-section, .constellation-section, .promise-section, .cake-section, .song-section, .letter-section, .scratch-section, .wishes-section, .trivia-section, .memory-section, .cannon-section, .polaroid-section, .jar-section, .age-section, .zodiac-section, .countdown-section, .lovemeter-section, .fortune-section, .wishjar-section, .iloveyou-section, .heartbeat-section, .particle-heart-section, .infinity-section, .final-section');
+  const sections = document.querySelectorAll('.love-section, .constellation-section, .promise-section, .cake-section, .letter-section, .scratch-section, .wishes-section, .trivia-section, .memory-section, .cannon-section, .polaroid-section, .jar-section, .age-section, .zodiac-section, .countdown-section, .lovemeter-section, .fortune-section, .wishjar-section, .iloveyou-section, .heartbeat-section, .particle-heart-section, .infinity-section, .final-section');
   sections.forEach(s => s.classList.add('reveal-on-scroll'));
 
   const observer = new IntersectionObserver((entries) => {
@@ -430,7 +177,6 @@ function runCountdown(name) {
       setTimeout(() => showBirthdayQuote(), 1500);
 
       startTypewriter(name);
-      startBirthdaySong(name);
     }
   }, 800);
 }
@@ -922,103 +668,129 @@ function startTypewriter(name) {
   }
 }
 
-// ===== PARTICLE HEART ASSEMBLE CANVAS =====
+// ===== 3D PARTICLE HEART ASSEMBLE CANVAS =====
 function initHeartAssembleCanvas(heartGate, letterPaper, onOpenCallback) {
   const canvas = document.getElementById('heartAssembleCanvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
 
-  // Size canvas
-  const W = 420, H = 420;
+  const W = 420, H = 450;
   canvas.width = W * dpr;
   canvas.height = H * dpr;
   canvas.style.width = W + 'px';
   canvas.style.height = H + 'px';
   ctx.scale(dpr, dpr);
 
-  const cx = W / 2, cy = H / 2;
+  const cx = W / 2, cy = H / 2 - 10;
+  const PERSPECTIVE = 500; // 3D perspective distance
+  const SCALE = 10;
 
-  // Heart shape points generator
-  function heartPoints(count, scale) {
+  // ---- 3D Heart surface point generator ----
+  // Generate points ON the 3D heart surface (a proper 3D heart shape)
+  function heartSurfacePoint() {
+    const u = Math.random() * Math.PI * 2;
+    const v = Math.random() * Math.PI;
+    // 3D parametric heart
+    const sinv = Math.sin(v);
+    const x3d = 16 * Math.pow(Math.sin(u), 3) * sinv;
+    const y3d = -(13 * Math.cos(u) - 5 * Math.cos(2*u) - 2 * Math.cos(3*u) - Math.cos(4*u)) * sinv;
+    const z3d = 16 * Math.cos(v); // depth
+    return { x: x3d * SCALE, y: y3d * SCALE, z: z3d * SCALE * 0.4 };
+  }
+
+  // Generate outline points (ring at z≈0)
+  function heartOutlinePoints(count) {
     const pts = [];
     for (let i = 0; i < count; i++) {
-      const t = (i / count) * Math.PI * 2;
-      const x = 16 * Math.pow(Math.sin(t), 3);
-      const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
-      pts.push({ x: cx + x * scale, y: cy + y * scale - 10 });
+      const u = (i / count) * Math.PI * 2;
+      const x3d = 16 * Math.pow(Math.sin(u), 3);
+      const y3d = -(13 * Math.cos(u) - 5 * Math.cos(2*u) - 2 * Math.cos(3*u) - Math.cos(4*u));
+      pts.push({ x: x3d * SCALE, y: y3d * SCALE, z: 0 });
     }
     return pts;
   }
 
-  // Also fill inside the heart with random points
-  function heartFillPoints(count, scale) {
+  // Generate fill points on 3D surface
+  function heartVolumePoints(count) {
     const pts = [];
-    let attempts = 0;
-    while (pts.length < count && attempts < count * 20) {
-      attempts++;
-      const rx = (Math.random() - 0.5) * 2;
-      const ry = (Math.random() - 0.5) * 2;
-      // Check if point is inside heart using parametric approximation
-      const px = rx * 18 * scale;
-      const py = ry * 18 * scale;
-      if (isInsideHeart(px / scale, py / scale)) {
-        pts.push({ x: cx + px, y: cy + py - 10 });
-      }
+    for (let i = 0; i < count; i++) {
+      pts.push(heartSurfacePoint());
     }
     return pts;
   }
 
-  function isInsideHeart(x, y) {
-    // Implicit heart equation: (x^2 + y^2 - 1)^3 - x^2 * y^3 < 0
-    const xx = x / 17, yy = -(y / 17);
-    const a = xx*xx + yy*yy - 1;
-    return (a*a*a - xx*xx*yy*yy*yy) < 0;
+  const outlineTargets3D = heartOutlinePoints(200);
+  const fillTargets3D = heartVolumePoints(350);
+  const allTargets3D = [...outlineTargets3D, ...fillTargets3D];
+  const total = allTargets3D.length;
+
+  // 3D rotation state
+  let rotY = 0; // Y-axis rotation
+  let rotX = 0.15; // slight tilt
+
+  // Project 3D → 2D with perspective
+  function project(x3, y3, z3) {
+    const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+    const cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+    // Rotate around Y
+    let rx = x3 * cosY - z3 * sinY;
+    let rz = x3 * sinY + z3 * cosY;
+    // Rotate around X
+    let ry = y3 * cosX - rz * sinX;
+    rz = y3 * sinX + rz * cosX;
+    // Perspective
+    const scale = PERSPECTIVE / (PERSPECTIVE + rz);
+    return {
+      x: cx + rx * scale,
+      y: cy + ry * scale,
+      z: rz,
+      scale: scale
+    };
   }
 
-  const SCALE = 11;
-  const outlineTargets = heartPoints(180, SCALE);
-  const fillTargets = heartFillPoints(250, SCALE);
-  const allTargets = [...outlineTargets, ...fillTargets];
-  const total = allTargets.length;
-
-  // Create particles — start from random scattered positions
-  const particles = allTargets.map((target, i) => {
-    const isOutline = i < outlineTargets.length;
-    const angle = Math.random() * Math.PI * 2;
-    const dist = 200 + Math.random() * 250;
+  // Create particles
+  const particles = allTargets3D.map((target, i) => {
+    const isOutline = i < outlineTargets3D.length;
+    // Random start position in 3D space (scattered far)
+    const sa = Math.random() * Math.PI * 2;
+    const sb = Math.random() * Math.PI;
+    const sd = 300 + Math.random() * 300;
     return {
-      x: cx + Math.cos(angle) * dist,
-      y: cy + Math.sin(angle) * dist,
-      tx: target.x,
-      ty: target.y,
-      size: isOutline ? (2 + Math.random() * 2.5) : (1.5 + Math.random() * 2),
+      // Current 3D position
+      x3: Math.sin(sb) * Math.cos(sa) * sd,
+      y3: Math.sin(sb) * Math.sin(sa) * sd,
+      z3: Math.cos(sb) * sd,
+      // Target 3D position on heart
+      tx3: target.x,
+      ty3: target.y,
+      tz3: target.z,
+      // Screen position (computed each frame)
+      sx: 0, sy: 0, sz: 0, sscale: 1,
+      baseSize: isOutline ? (2.2 + Math.random() * 2) : (1.5 + Math.random() * 2),
       isOutline,
-      // Stagger: outline first, then fill
-      delay: isOutline ? (i / outlineTargets.length) * 2000 : (2000 + ((i - outlineTargets.length) / fillTargets.length) * 2500),
+      delay: isOutline
+        ? (i / outlineTargets3D.length) * 2200
+        : (2200 + ((i - outlineTargets3D.length) / fillTargets3D.length) * 2800),
       arrived: false,
       alpha: 0,
-      hue: 330 + Math.random() * 30, // pink-red range
+      hue: 330 + Math.random() * 30,
       sat: 80 + Math.random() * 20,
-      light: isOutline ? (55 + Math.random() * 15) : (45 + Math.random() * 25),
-      vx: 0,
-      vy: 0,
+      light: isOutline ? (58 + Math.random() * 15) : (42 + Math.random() * 28),
+      vx: 0, vy: 0, vz: 0,
       wobblePhase: Math.random() * Math.PI * 2,
-      wobbleSpeed: 0.02 + Math.random() * 0.02,
-      wobbleAmp: 1 + Math.random() * 2,
+      wobbleSpeed: 0.015 + Math.random() * 0.02,
     };
   });
 
-  // Ambient floating sparkles (always float around)
+  // Ambient sparkles
   const sparkles = [];
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 50; i++) {
     sparkles.push({
-      x: Math.random() * W,
-      y: Math.random() * H,
+      x: Math.random() * W, y: Math.random() * H,
       size: 0.5 + Math.random() * 2,
-      speed: 0.2 + Math.random() * 0.5,
-      alpha: 0,
-      alphaDir: 0.005 + Math.random() * 0.01,
+      speed: 0.15 + Math.random() * 0.4,
+      alpha: 0, alphaDir: 0.004 + Math.random() * 0.008,
       drift: Math.random() * Math.PI * 2,
     });
   }
@@ -1028,59 +800,65 @@ function initHeartAssembleCanvas(heartGate, letterPaper, onOpenCallback) {
   let tapped = false;
   let explodeTime = null;
   let pulsePhase = 0;
-  let glowAlpha = 0;
 
-  // Animation loop
   function animate(timestamp) {
     if (!startTime) startTime = timestamp;
     const elapsed = timestamp - startTime;
 
     ctx.clearRect(0, 0, W, H);
 
-    // --- Draw ambient sparkles ---
+    // Slowly rotate when assembled, otherwise stay still during assemble
+    if (assembled && !tapped) {
+      rotY += 0.008;
+    } else if (!assembled) {
+      // Very gentle rotation during assembly so user sees 3D
+      rotY = Math.sin(elapsed * 0.0003) * 0.3;
+    }
+
+    // --- Ambient sparkles ---
     sparkles.forEach(s => {
       s.y -= s.speed;
-      s.x += Math.sin(s.drift) * 0.3;
-      s.drift += 0.01;
+      s.x += Math.sin(s.drift) * 0.25;
+      s.drift += 0.008;
       s.alpha += s.alphaDir;
-      if (s.alpha > 0.8 || s.alpha < 0) s.alphaDir *= -1;
-      s.alpha = Math.max(0, Math.min(0.8, s.alpha));
+      if (s.alpha > 0.7 || s.alpha < 0) s.alphaDir *= -1;
+      s.alpha = Math.max(0, Math.min(0.7, s.alpha));
       if (s.y < -5) { s.y = H + 5; s.x = Math.random() * W; }
-
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(255,180,220,${s.alpha})`;
       ctx.fill();
     });
 
+    // --- EXPLODE PHASE ---
     if (tapped && explodeTime) {
-      // --- EXPLODE OUTWARD ---
       const explodeElapsed = timestamp - explodeTime;
       let allGone = true;
       particles.forEach(p => {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += 0.15; // gravity
-        p.alpha *= 0.97;
+        p.x3 += p.vx;
+        p.y3 += p.vy;
+        p.z3 += p.vz;
+        p.vy += 0.2;
+        p.alpha *= 0.965;
         if (p.alpha > 0.01) {
           allGone = false;
+          const pr = project(p.x3, p.y3, p.z3);
+          const sz = Math.max(0.5, p.baseSize * pr.scale);
           ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.arc(pr.x, pr.y, sz, 0, Math.PI * 2);
           ctx.fillStyle = `hsla(${p.hue},${p.sat}%,${p.light}%,${p.alpha})`;
-          ctx.shadowColor = `hsla(${p.hue},100%,60%,${p.alpha * 0.5})`;
-          ctx.shadowBlur = 6;
+          ctx.shadowColor = `hsla(${p.hue},100%,65%,${p.alpha * 0.4})`;
+          ctx.shadowBlur = 5;
           ctx.fill();
           ctx.shadowBlur = 0;
         }
       });
-
-      if (allGone || explodeElapsed > 2000) {
+      if (allGone || explodeElapsed > 2500) {
         heartGate.classList.add('opened');
         letterPaper.classList.add('letter-paper-show');
         onOpenCallback();
-        return; // Stop animation
+        return;
       }
-
       requestAnimationFrame(animate);
       return;
     }
@@ -1088,74 +866,103 @@ function initHeartAssembleCanvas(heartGate, letterPaper, onOpenCallback) {
     // --- ASSEMBLE PHASE ---
     let arrivedCount = 0;
 
-    particles.forEach(p => {
-      if (elapsed < p.delay) {
-        // Not yet started — stay invisible
-        p.alpha = 0;
-      } else {
-        const t = Math.min(1, (elapsed - p.delay) / 1500);
-        // Easing — cubic ease out
-        const ease = 1 - Math.pow(1 - t, 3);
+    // Sort particles by z-depth for proper 3D rendering (back to front)
+    const renderOrder = particles.map((p, idx) => idx);
 
-        // Lerp to target
-        p.x = p.x + (p.tx - p.x) * 0.06;
-        p.y = p.y + (p.ty - p.y) * 0.06;
+    // Update positions first
+    particles.forEach((p, i) => {
+      if (elapsed < p.delay) {
+        p.alpha = 0;
+        // Project current random position
+        const pr = project(p.x3, p.y3, p.z3);
+        p.sx = pr.x; p.sy = pr.y; p.sz = pr.z; p.sscale = pr.scale;
+      } else {
+        const t = Math.min(1, (elapsed - p.delay) / 1800);
+
+        // Lerp 3D position to target
+        p.x3 += (p.tx3 - p.x3) * 0.05;
+        p.y3 += (p.ty3 - p.y3) * 0.05;
+        p.z3 += (p.tz3 - p.z3) * 0.05;
         p.alpha = Math.min(1, t * 1.5);
 
         if (t >= 1) {
           p.arrived = true;
           arrivedCount++;
-          // Gentle wobble after arriving
+          // Gentle breathing wobble
           p.wobblePhase += p.wobbleSpeed;
-          const wobX = Math.sin(p.wobblePhase) * p.wobbleAmp;
-          const wobY = Math.cos(p.wobblePhase * 0.7) * p.wobbleAmp;
-          p.x = p.tx + wobX;
-          p.y = p.ty + wobY;
+          const wobble = Math.sin(p.wobblePhase) * 1.5;
+          p.x3 = p.tx3 + wobble;
+          p.y3 = p.ty3 + Math.cos(p.wobblePhase * 0.7) * 1;
         }
-      }
 
-      if (p.alpha > 0) {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.hue},${p.sat}%,${p.light}%,${p.alpha})`;
-        // Glow effect for outline particles
-        if (p.isOutline) {
-          ctx.shadowColor = `hsla(${p.hue},100%,60%,${p.alpha * 0.6})`;
-          ctx.shadowBlur = 8;
-        }
-        ctx.fill();
-        ctx.shadowBlur = 0;
+        // Project to 2D
+        const pr = project(p.x3, p.y3, p.z3);
+        p.sx = pr.x; p.sy = pr.y; p.sz = pr.z; p.sscale = pr.scale;
       }
     });
 
-    // Check if heart is fully assembled
-    if (!assembled && arrivedCount >= total * 0.9) {
-      assembled = true;
-      // Show hint
-      const hint = document.getElementById('letterHeartHint');
-      if (hint) hint.classList.add('visible');
-    }
+    // Sort by z (back to front) for proper layering
+    renderOrder.sort((a, b) => particles[b].sz - particles[a].sz);
 
-    // Pulsing glow behind heart once assembled
+    // Render pulsing glow BEHIND everything
     if (assembled) {
-      pulsePhase += 0.03;
-      glowAlpha = 0.08 + Math.sin(pulsePhase) * 0.06;
-      const grad = ctx.createRadialGradient(cx, cy - 10, 20, cx, cy - 10, 180);
-      grad.addColorStop(0, `rgba(255,45,117,${glowAlpha * 2})`);
-      grad.addColorStop(0.5, `rgba(255,110,180,${glowAlpha})`);
+      pulsePhase += 0.025;
+      const glowAlpha = 0.1 + Math.sin(pulsePhase) * 0.07;
+      const beatScale = 1 + Math.sin(pulsePhase * 2) * 0.03;
+      const grad = ctx.createRadialGradient(cx, cy, 10, cx, cy, 200 * beatScale);
+      grad.addColorStop(0, `rgba(255,30,100,${glowAlpha * 2.5})`);
+      grad.addColorStop(0.3, `rgba(255,80,150,${glowAlpha * 1.5})`);
+      grad.addColorStop(0.6, `rgba(255,110,180,${glowAlpha * 0.5})`);
       grad.addColorStop(1, 'rgba(255,45,117,0)');
-
-      // Draw glow behind particles
-      ctx.globalCompositeOperation = 'destination-over';
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, W, H);
-      ctx.globalCompositeOperation = 'source-over';
+    }
+
+    // Draw particles
+    renderOrder.forEach(idx => {
+      const p = particles[idx];
+      if (p.alpha <= 0) return;
+
+      const sz = Math.max(0.5, p.baseSize * p.sscale);
+      // Depth-based brightness: closer = brighter, farther = dimmer
+      const depthFactor = Math.max(0.3, Math.min(1.2, (PERSPECTIVE + 100) / (PERSPECTIVE + p.sz)));
+      const finalAlpha = p.alpha * depthFactor;
+      const finalLight = p.light * depthFactor;
+
+      ctx.beginPath();
+      ctx.arc(p.sx, p.sy, sz, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${p.hue},${p.sat}%,${Math.min(85, finalLight)}%,${finalAlpha})`;
+
+      // Glow for outline and bright particles
+      if (p.isOutline || p.sz < 0) {
+        ctx.shadowColor = `hsla(${p.hue},100%,65%,${finalAlpha * 0.5})`;
+        ctx.shadowBlur = 8 * p.sscale;
+      }
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    });
+
+    // Specular highlight shimmer on the front of the heart
+    if (assembled) {
+      const shimmerX = cx + Math.sin(rotY) * 40;
+      const shimmerGrad = ctx.createRadialGradient(shimmerX, cy - 30, 5, shimmerX, cy - 30, 80);
+      shimmerGrad.addColorStop(0, `rgba(255,255,255,${0.06 + Math.sin(pulsePhase * 1.5) * 0.04})`);
+      shimmerGrad.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = shimmerGrad;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    // Check assembled
+    if (!assembled && arrivedCount >= total * 0.85) {
+      assembled = true;
+      const hint = document.getElementById('letterHeartHint');
+      if (hint) hint.classList.add('visible');
     }
 
     requestAnimationFrame(animate);
   }
 
-  // Start when section is visible
+  // Start on visibility
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -1163,25 +970,24 @@ function initHeartAssembleCanvas(heartGate, letterPaper, onOpenCallback) {
         requestAnimationFrame(animate);
       }
     });
-  }, { threshold: 0.2 });
+  }, { threshold: 0.15 });
   observer.observe(canvas);
 
-  // Tap handler
+  // Tap handler → explode
   heartGate.addEventListener('click', function onTap() {
     if (!assembled || tapped) return;
     heartGate.removeEventListener('click', onTap);
     tapped = true;
     haptic(80);
 
-    // Explode particles outward from center
     explodeTime = performance.now();
     particles.forEach(p => {
-      const dx = p.x - cx;
-      const dy = p.y - (cy - 10);
-      const dist = Math.sqrt(dx*dx + dy*dy) || 1;
-      const speed = 8 + Math.random() * 12;
-      p.vx = (dx / dist) * speed + (Math.random() - 0.5) * 4;
-      p.vy = (dy / dist) * speed + (Math.random() - 0.5) * 4 - 3;
+      const dx = p.x3, dy = p.y3, dz = p.z3;
+      const dist = Math.sqrt(dx*dx + dy*dy + dz*dz) || 1;
+      const speed = 10 + Math.random() * 14;
+      p.vx = (dx / dist) * speed + (Math.random() - 0.5) * 5;
+      p.vy = (dy / dist) * speed + (Math.random() - 0.5) * 5 - 4;
+      p.vz = (dz / dist) * speed + (Math.random() - 0.5) * 5;
       p.alpha = 1;
     });
   });
@@ -1407,72 +1213,7 @@ toggleBtn.addEventListener('click', (e) => {
   }
 });
 
-// ===== ROMANTIC BIRTHDAY SONG =====
-let currentSongName = '';
-
-function startBirthdaySong(name) {
-  currentSongName = name;
-  const lyrics = document.getElementById('songLyrics');
-  const notes = document.getElementById('songNotes');
-  const replay = document.getElementById('songReplay');
-  playSongAnimation(name, lyrics, notes, replay);
-}
-
-function playSongAnimation(name, lyrics, notes, replay) {
-  lyrics.innerHTML = ''; notes.innerHTML = '';
-  replay.classList.remove('show');
-  ['🎵', '🎶', '🎵', '🎶', '🎵'].forEach((n, i) => {
-    const span = document.createElement('span'); span.className = 'song-note';
-    span.textContent = n; span.style.setProperty('--d', `${i * 0.15}s`);
-    notes.appendChild(span);
-  });
-
-  const lines = [
-    `🎵 Happy Birthday to you...`,
-    `🎶 Happy Birthday to you...`,
-    `🎵 Happy Birthday my love, ${name}...`,
-    `🎶 Happy Birthday to you! 🌹`,
-    ``,
-    `💫 You light up my world,`,
-    `💖 You make my heart sing,`,
-    `✨ On this beautiful day,`,
-    `🌹 You're my everything!`,
-    ``,
-    `🥰 Happy Birthday, ${name}! I love you! 💕`,
-  ];
-
-  let lineIndex = 0;
-  function showNextLine() {
-    if (lineIndex >= lines.length) {
-      replay.classList.add('show');
-      burstFireworks(3);
-      return;
-    }
-    const line = lines[lineIndex];
-    const div = document.createElement('div'); div.className = 'song-line';
-    div.textContent = line; lyrics.appendChild(div);
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      div.classList.add('show');
-      if (line.includes(name)) setTimeout(() => div.classList.add('highlight'), 300);
-    }));
-    lineIndex++;
-    setTimeout(showNextLine, line === '' ? 400 : line.includes(name) ? 1200 : 800);
-  }
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        observer.disconnect();
-        setTimeout(showNextLine, 500);
-      }
-    });
-  }, { threshold: 0.3 });
-  observer.observe(lyrics);
-}
-
-document.getElementById('songReplay').addEventListener('click', () => {
-  playSongAnimation(currentSongName, document.getElementById('songLyrics'), document.getElementById('songNotes'), document.getElementById('songReplay'));
-});
+// (Birthday song section removed)
 
 // ===== WHATSAPP SHARE =====
 document.getElementById('whatsappBtn').addEventListener('click', () => {

@@ -17,52 +17,7 @@
     <source src="heeriye.mp3" type="audio/mpeg"/>
   </audio>
 
-  <!-- ============================================
-       SCREEN 1 — CINEMATIC INTRO
-       ============================================ -->
-  <div class="intro" id="intro">
-    <canvas id="nebulaCanvas"></canvas>
-    <div class="rose-petals" id="rosePetals"></div>
-    <div class="intro-content">
-      <div class="magic-text" id="magicText"></div>
-      <div class="envelope-wrap" id="envelopeWrap">
-        <div class="envelope-3d" id="envelope3d">
-          <div class="envelope" id="envelope">
-            <div class="envelope-flap" id="envelopeFlap"></div>
-            <div class="envelope-body">
-              <div class="envelope-heart">💌</div>
-            </div>
-            <div class="envelope-letter" id="envelopeLetter">
-              <p>A birthday wish<br/>made with love...</p>
-            </div>
-          </div>
-        </div>
-        <div class="envelope-glow-ring"></div>
-        <div class="envelope-glow-ring ring-2"></div>
-      </div>
-      <p class="intro-hint animate-pulse">Tap the envelope 💕</p>
-    </div>
-  </div>
-
-  <!-- ============================================
-       SCREEN 2 — NAME INPUT (Romantic)
-       ============================================ -->
-  <div class="screen screen-name hidden" id="screenName">
-    <canvas id="heartCanvas"></canvas>
-    <div class="mesh-gradient-bg"></div>
-    <div class="name-content">
-      <div class="floating-hearts" id="floatingHearts"></div>
-      <div class="crown-emoji">👑</div>
-      <h2 class="ask-name">Who holds your heart?</h2>
-      <p class="ask-sub">Enter their name and watch the magic unfold</p>
-      <div class="input-glass">
-        <input type="text" id="nameInput" placeholder="Type their name..." maxlength="20" autocomplete="off" spellcheck="false"/>
-        <button id="nameBtn">
-          <span>Begin the Magic ✨</span>
-        </button>
-      </div>
-    </div>
-  </div>
+  <!-- Intro & Name screens removed — name "saba" is hardcoded -->
 
   <!-- ============================================
        LOADING SCREEN
@@ -183,16 +138,7 @@
         </div>
       </section>
 
-      <!-- ===== BIRTHDAY SONG ===== -->
-      <section class="song-section" id="songSection">
-        <div class="section-label"><span class="label-icon">🎶</span> A Song For You</div>
-        <div class="song-card">
-          <div class="song-visualizer" id="songVisualizer"></div>
-          <div class="song-notes" id="songNotes"></div>
-          <div class="song-lyrics" id="songLyrics"></div>
-          <button class="song-replay-btn" id="songReplay">🔄 Play Again</button>
-        </div>
-      </section>
+      <!-- Song section removed -->
 
       <!-- ===== LOVE LETTER ===== -->
       <section class="letter-section" id="letterSection">
