@@ -17,12 +17,38 @@
     <source src="heeriye.mp3" type="audio/mpeg"/>
   </audio>
 
-  <!-- Intro & Name screens removed — name "saba" is hardcoded -->
+  <!-- ============================================
+       CINEMATIC INTRO
+       ============================================ -->
+  <div class="intro" id="introScreen">
+    <canvas id="nebulaCanvas"></canvas>
+    <div class="rose-petals" id="introPetals"></div>
+    <div class="intro-content">
+      <p class="magic-text" id="introMagicText"></p>
+      <div class="envelope-wrap" id="envelopeWrap" style="opacity:0;transform:scale(0.8);transition:opacity 0.8s ease,transform 0.8s ease;">
+        <div class="envelope-glow-ring"></div>
+        <div class="envelope-glow-ring ring-2"></div>
+        <div class="envelope-3d">
+          <div class="envelope">
+            <div class="envelope-flap" id="envelopeFlap"></div>
+            <div class="envelope-letter" id="envelopeLetter">
+              Happy Birthday<br/>Saba 💕
+            </div>
+            <div class="envelope-body">
+              <span class="envelope-heart">💌</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="intro-hint animate-pulse" id="introHint" style="opacity:0;transition:opacity 0.8s ease 0.3s;">Tap the envelope to open your surprise</p>
+    </div>
+  </div>
 
   <!-- ============================================
        LOADING SCREEN
        ============================================ -->
   <div class="loading-screen hidden" id="loadingScreen">
+    <canvas id="loadingNebulaCanvas"></canvas>
     <div class="loading-heart-wrap">
       <div class="loading-heart">💖</div>
       <svg class="loading-ring" viewBox="0 0 100 100">
@@ -32,15 +58,18 @@
     </div>
     <p class="loading-text" id="loadingText">Loading your surprises</p>
     <div class="loading-dots"><span>.</span><span>.</span><span>.</span></div>
+    <p class="loading-subtext">for Saba, with love</p>
   </div>
 
   <!-- ============================================
        SCREEN 3 — MAIN BIRTHDAY EXPERIENCE
        ============================================ -->
   <div class="screen screen-main hidden" id="screenMain">
+    <canvas id="mainNebulaCanvas"></canvas>
     <canvas id="fireworks"></canvas>
     <div id="particles"></div>
     <div class="animated-mesh-bg" id="meshBg"></div>
+    <div class="petal-rain-bg" id="petalRainBg"></div>
 
     <div class="emoji-rain-layer" id="emojiRainLayer"></div>
     <div class="main-scroll" id="mainScroll">
@@ -78,14 +107,6 @@
       <section class="love-section" id="loveSection">
         <div class="section-label"><span class="label-icon">💕</span> Why You're So Special</div>
         <div class="love-timeline" id="loveTimeline"></div>
-      </section>
-
-      <!-- ===== CONSTELLATION NAME ===== -->
-      <section class="constellation-section" id="constellationSection">
-        <div class="section-label"><span class="label-icon">🌌</span> Written In The Stars</div>
-        <p class="constellation-sub">Your name shines brighter than any star in the sky</p>
-        <canvas id="constellationCanvas"></canvas>
-        <p class="constellation-hint">Touch the stars to make them sparkle ✨</p>
       </section>
 
       <!-- ===== PROMISE CARDS ===== -->
@@ -232,38 +253,6 @@
             <span class="jar-modal-close" id="jarModalClose">&times;</span>
             <span class="jar-modal-emoji" id="jarModalEmoji"></span>
             <p class="jar-modal-text" id="jarModalText"></p>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===== AGE ===== -->
-      <section class="age-section">
-        <div class="section-label"><span class="label-icon">🎈</span> How old are you turning?</div>
-        <div class="age-ring">
-          <button class="age-ctrl" id="ageDown">−</button>
-          <div class="age-center">
-            <span class="age-num" id="ageDisplay">1</span>
-            <span class="age-word">years young!</span>
-          </div>
-          <button class="age-ctrl" id="ageUp">+</button>
-        </div>
-        <p class="age-msg" id="ageFun"></p>
-        <div class="age-candles" id="ageCandles"></div>
-      </section>
-
-      <!-- ===== ZODIAC PERSONALITY ===== -->
-      <section class="zodiac-section" id="zodiacSection">
-        <div class="section-label"><span class="label-icon">🔮</span> Your Star Sign</div>
-        <p class="zodiac-sub">Select your birth month to discover your cosmic personality</p>
-        <div class="zodiac-months" id="zodiacMonths"></div>
-        <div class="zodiac-card hidden" id="zodiacCard">
-          <div class="zodiac-emoji" id="zodiacEmoji"></div>
-          <h3 class="zodiac-name" id="zodiacName"></h3>
-          <p class="zodiac-dates" id="zodiacDates"></p>
-          <div class="zodiac-traits" id="zodiacTraits"></div>
-          <div class="zodiac-extra">
-            <span class="zodiac-lucky" id="zodiacLucky"></span>
-            <span class="zodiac-compat" id="zodiacCompat"></span>
           </div>
         </div>
       </section>
@@ -422,6 +411,147 @@
       </section>
 
     </div>
+
+    <!-- Secret Trigger (fixed floating button) -->
+    <div class="secret-trigger-float" id="secretTrigger">
+      <div class="secret-trigger-ring"></div>
+      <div class="secret-trigger-ring ring-2"></div>
+      <span class="secret-trigger-emoji">🔐</span>
+      <div class="secret-trigger-tooltip">
+        <span>A secret awaits you...</span>
+        <span class="secret-tooltip-arrow"></span>
+      </div>
+    </div>
+
+    <!-- Secret Surprise Overlay -->
+    <div class="secret-overlay hidden" id="secretOverlay">
+      <button class="secret-close" id="secretClose">&times;</button>
+
+      <!-- Password Gate -->
+      <div class="secret-gate" id="secretGate">
+        <div class="secret-lock-anim" id="secretLockAnim">🔒</div>
+        <p class="secret-gate-title">Enter the Secret Code</p>
+        <div class="secret-pin" id="secretPin">
+          <input type="tel" maxlength="1" class="pin-input" data-idx="0" inputmode="numeric" autocomplete="off"/>
+          <input type="tel" maxlength="1" class="pin-input" data-idx="1" inputmode="numeric" autocomplete="off"/>
+          <input type="tel" maxlength="1" class="pin-input" data-idx="2" inputmode="numeric" autocomplete="off"/>
+          <input type="tel" maxlength="1" class="pin-input" data-idx="3" inputmode="numeric" autocomplete="off"/>
+          <input type="tel" maxlength="1" class="pin-input" data-idx="4" inputmode="numeric" autocomplete="off"/>
+          <input type="tel" maxlength="1" class="pin-input" data-idx="5" inputmode="numeric" autocomplete="off"/>
+        </div>
+        <p class="secret-hint">Hint: A date that means everything to us 💕</p>
+        <p class="secret-error hidden" id="secretError">Wrong code! Try again 💔</p>
+      </div>
+
+      <!-- Secret Content (hidden until unlocked) -->
+      <div class="secret-content hidden" id="secretContent">
+
+        <!-- Welcome Banner -->
+        <div class="secret-welcome">
+          <div class="secret-welcome-emojis">🎉✨💕✨🎉</div>
+          <h2 class="secret-welcome-title">You Unlocked It!</h2>
+          <p class="secret-welcome-sub">These surprises are only for your eyes, Saba 💕</p>
+        </div>
+
+        <!-- 3D Gift Box -->
+        <section class="secret-section">
+          <div class="secret-section-header">
+            <span class="secret-header-deco">✦</span>
+            <div class="secret-header-icon">🎁</div>
+            <h3 class="secret-header-title">A Gift Just For You</h3>
+            <p class="secret-header-sub">Something special is wrapped inside...</p>
+            <span class="secret-header-deco">✦</span>
+          </div>
+          <div class="gift-box-scene" id="giftBoxScene">
+            <div class="gift-box" id="giftBox">
+              <div class="gift-lid" id="giftLid">
+                <div class="gift-lid-top"></div>
+                <div class="gift-lid-front"></div>
+                <div class="gift-lid-back"></div>
+                <div class="gift-lid-left"></div>
+                <div class="gift-lid-right"></div>
+                <div class="gift-bow">🎀</div>
+              </div>
+              <div class="gift-base">
+                <div class="gift-base-front"></div>
+                <div class="gift-base-back"></div>
+                <div class="gift-base-left"></div>
+                <div class="gift-base-right"></div>
+                <div class="gift-base-bottom"></div>
+              </div>
+            </div>
+          </div>
+          <p class="gift-tap-hint" id="giftTapHint">👆 Tap the gift to open it!</p>
+          <div class="gift-message hidden" id="giftMessage">
+            <div class="gift-msg-card">
+              <div class="gift-msg-sparkles">✨💖✨</div>
+              <span class="gift-msg-emoji">💝</span>
+              <p class="gift-msg-title">You Are My Greatest Gift</p>
+              <div class="gift-msg-divider"></div>
+              <p class="gift-msg-text">No wrapping paper could contain how much I love you. You are the most beautiful gift life has ever given me. Happy Birthday, my love!</p>
+              <div class="gift-msg-hearts">💕 💗 💕</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Secret Divider -->
+        <div class="secret-divider"><span>💌</span></div>
+
+        <!-- Private Love Letter -->
+        <section class="secret-section">
+          <div class="secret-section-header">
+            <span class="secret-header-deco">✦</span>
+            <div class="secret-header-icon">💌</div>
+            <h3 class="secret-header-title">A Secret Letter</h3>
+            <p class="secret-header-sub">Words from the deepest part of my heart...</p>
+            <span class="secret-header-deco">✦</span>
+          </div>
+          <div class="secret-letter-paper" id="secretLetterPaper">
+            <div class="secret-letter-petals">
+              <span class="sl-petal">🌸</span>
+              <span class="sl-petal">🌺</span>
+              <span class="sl-petal">🌸</span>
+            </div>
+            <div class="secret-letter-watermark">💕</div>
+            <div class="secret-letter-stamp">💌</div>
+            <p class="secret-letter-greeting">My Dearest Saba,</p>
+            <div class="secret-letter-body" id="secretLetterBody"></div>
+            <div class="secret-letter-footer">
+              <p class="secret-letter-sign">Yours forever and always ♥</p>
+              <div class="secret-letter-seal">
+                <span>💋</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Secret Divider -->
+        <div class="secret-divider"><span>🎟️</span></div>
+
+        <!-- Love Coupon Book -->
+        <section class="secret-section">
+          <div class="secret-section-header">
+            <span class="secret-header-deco">✦</span>
+            <div class="secret-header-icon">🎟️</div>
+            <h3 class="secret-header-title">Love Coupon Book</h3>
+            <p class="secret-header-sub">Redeem these anytime — they never expire! 💕</p>
+            <span class="secret-header-deco">✦</span>
+          </div>
+          <p class="coupon-sub">👆 Tap each coupon to flip &amp; reveal your prize!</p>
+          <div class="coupon-grid" id="couponGrid"></div>
+        </section>
+
+        <!-- Secret Footer -->
+        <div class="secret-footer">
+          <p class="secret-footer-text">🔒 This page is our little secret 🔒</p>
+          <div class="secret-footer-hearts">💕 💖 💗 💝 💕</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Section Progress Dots -->
+    <div class="section-dots" id="sectionDots"></div>
   </div>
 
   <script src="app.js"></script>

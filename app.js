@@ -1,7 +1,129 @@
 /* =============================================
    BIRTHDAY WISHES — Romantic Premium Edition
-   Name "saba" is hardcoded — no intro/envelope/name screens
+   Name "saba" is hardcoded
    ============================================= */
+
+// ===== SOUND EFFECTS (Web Audio API — no external files) =====
+const SFX = (() => {
+  let ctx = null;
+  let enabled = true;
+
+  function getCtx() {
+    if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  }
+
+  const sounds = {
+    whoosh(ac) {
+      const dur = 0.4, len = ac.sampleRate * dur;
+      const buf = ac.createBuffer(1, len, ac.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+      const src = ac.createBufferSource(); src.buffer = buf;
+      const f = ac.createBiquadFilter(); f.type = 'bandpass';
+      f.frequency.setValueAtTime(1000, ac.currentTime);
+      f.frequency.exponentialRampToValueAtTime(400, ac.currentTime + dur); f.Q.value = 1;
+      const g = ac.createGain();
+      g.gain.setValueAtTime(0.12, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
+      src.connect(f).connect(g).connect(ac.destination); src.start();
+    },
+    pop(ac) {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(600, ac.currentTime);
+      o.frequency.exponentialRampToValueAtTime(200, ac.currentTime + 0.1);
+      g.gain.setValueAtTime(0.18, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.12);
+      o.connect(g).connect(ac.destination); o.start(); o.stop(ac.currentTime + 0.12);
+    },
+    chime(ac) {
+      [880, 1320].forEach((freq, i) => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = 'sine'; o.frequency.value = freq;
+        const t = ac.currentTime + i * 0.05;
+        g.gain.setValueAtTime(0.08, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+        o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 0.55);
+      });
+    },
+    celebration(ac) {
+      [523, 659, 784, 1047].forEach((freq, i) => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = 'triangle'; o.frequency.value = freq;
+        const t = ac.currentTime + i * 0.08;
+        g.gain.setValueAtTime(0.08, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+        o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 0.35);
+      });
+    },
+    heartbeat(ac) {
+      [0, 0.15].forEach(delay => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(60, ac.currentTime + delay);
+        o.frequency.exponentialRampToValueAtTime(40, ac.currentTime + delay + 0.15);
+        g.gain.setValueAtTime(0.22, ac.currentTime + delay);
+        g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + delay + 0.2);
+        o.connect(g).connect(ac.destination);
+        o.start(ac.currentTime + delay); o.stop(ac.currentTime + delay + 0.25);
+      });
+    },
+    ding(ac) {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'triangle'; o.frequency.setValueAtTime(1047, ac.currentTime);
+      g.gain.setValueAtTime(0.12, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.4);
+      o.connect(g).connect(ac.destination); o.start(); o.stop(ac.currentTime + 0.4);
+    },
+    blow(ac) {
+      const dur = 1.0, len = ac.sampleRate * dur;
+      const buf = ac.createBuffer(1, len, ac.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.sin((i / len) * Math.PI);
+      const src = ac.createBufferSource(); src.buffer = buf;
+      const f = ac.createBiquadFilter(); f.type = 'lowpass';
+      f.frequency.setValueAtTime(800, ac.currentTime);
+      f.frequency.linearRampToValueAtTime(200, ac.currentTime + dur);
+      const g = ac.createGain(); g.gain.setValueAtTime(0.15, ac.currentTime);
+      src.connect(f).connect(g).connect(ac.destination); src.start();
+    },
+    scratch(ac) {
+      const dur = 0.08, len = ac.sampleRate * dur;
+      const buf = ac.createBuffer(1, len, ac.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * 0.5;
+      const src = ac.createBufferSource(); src.buffer = buf;
+      const f = ac.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 2000;
+      const g = ac.createGain(); g.gain.value = 0.06;
+      src.connect(f).connect(g).connect(ac.destination); src.start();
+    },
+    letterOpen(ac) {
+      for (let i = 0; i < 5; i++) {
+        const dur = 0.05, len = ac.sampleRate * dur;
+        const buf = ac.createBuffer(1, len, ac.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let j = 0; j < len; j++) d[j] = (Math.random() * 2 - 1) * (1 - j / len);
+        const src = ac.createBufferSource(); src.buffer = buf;
+        const f = ac.createBiquadFilter(); f.type = 'highpass';
+        f.frequency.value = 3000 + Math.random() * 2000;
+        const g = ac.createGain(); g.gain.value = 0.05;
+        src.connect(f).connect(g).connect(ac.destination);
+        src.start(ac.currentTime + i * 0.04);
+      }
+    },
+  };
+
+  return {
+    play(name) {
+      if (!enabled) return;
+      try { const ac = getCtx(); if (sounds[name]) sounds[name](ac); } catch(e) {}
+    },
+    toggle() { enabled = !enabled; return enabled; },
+    isEnabled() { return enabled; },
+  };
+})();
 
 // ===== CURSOR TRAIL (Desktop) =====
 const cursorTrail = document.getElementById('cursorTrail');
@@ -31,16 +153,178 @@ if (window.matchMedia('(hover: hover)').matches) {
 const screenMain = document.getElementById('screenMain');
 const FIXED_NAME = 'saba';
 
-// Start immediately — show loading then main screen
-(function autoStart() {
+// ===== CINEMATIC INTRO =====
+(function cinematicIntro() {
+  const introScreen = document.getElementById('introScreen');
+  const envelopeWrap = document.getElementById('envelopeWrap');
+  const envelopeFlap = document.getElementById('envelopeFlap');
+  const envelopeLetter = document.getElementById('envelopeLetter');
+  const introHint = document.getElementById('introHint');
+  const introTextEl = document.getElementById('introMagicText');
+
+  // 1. Nebula canvas
+  initNebulaCanvas();
+
+  // 2. Rose petals
+  generateIntroPetals(20);
+
+  // 3. Typewriter intro text
+  const messages = ['Something special is waiting...', 'Just for you, Saba...'];
+  let msgIdx = 0, charIdx = 0;
+  introTextEl.textContent = '';
+
+  function typeIntro() {
+    if (msgIdx >= messages.length) {
+      // Done typing — show envelope, remove cursor
+      introTextEl.classList.add('done');
+      setTimeout(() => {
+        envelopeWrap.style.opacity = '1';
+        envelopeWrap.style.transform = 'scale(1)';
+        setTimeout(() => { introHint.style.opacity = '1'; }, 600);
+      }, 400);
+      return;
+    }
+    const msg = messages[msgIdx];
+    if (charIdx < msg.length) {
+      introTextEl.textContent += msg.charAt(charIdx);
+      charIdx++;
+      setTimeout(typeIntro, 50);
+    } else {
+      // Pause, then clear for next message
+      setTimeout(() => {
+        introTextEl.style.opacity = '0';
+        setTimeout(() => {
+          introTextEl.textContent = '';
+          introTextEl.style.opacity = '1';
+          msgIdx++;
+          charIdx = 0;
+          if (msgIdx < messages.length) typeIntro();
+          else typeIntro(); // triggers the "done" branch
+        }, 400);
+      }, 1200);
+    }
+  }
+  setTimeout(typeIntro, 800);
+
+  // 4. Envelope tap
+  envelopeWrap.addEventListener('click', function onTap() {
+    envelopeWrap.removeEventListener('click', onTap);
+    haptic(60);
+    SFX.play('letterOpen');
+
+    envelopeFlap.classList.add('open');
+    setTimeout(() => envelopeLetter.classList.add('rise'), 300);
+
+    setTimeout(() => {
+      introScreen.classList.add('exit');
+      setTimeout(() => {
+        introScreen.classList.add('hidden');
+        startLoadingScreen();
+      }, 1200);
+    }, 1500);
+  });
+})();
+
+// ===== NEBULA CANVAS (starfield background for intro) =====
+function initNebulaCanvas() {
+  const canvas = document.getElementById('nebulaCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const stars = [];
+  for (let i = 0; i < 120; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 2 + 0.3,
+      alpha: Math.random(),
+      da: (Math.random() - 0.5) * 0.015,
+      drift: Math.random() * 0.15,
+    });
+  }
+
+  const nebulae = [
+    { x: canvas.width * 0.25, y: canvas.height * 0.3, r: 200, hue: 330 },
+    { x: canvas.width * 0.75, y: canvas.height * 0.6, r: 180, hue: 270 },
+    { x: canvas.width * 0.5, y: canvas.height * 0.5, r: 250, hue: 350 },
+  ];
+
+  let frame = 0;
+  function draw() {
+    const intro = document.getElementById('introScreen');
+    if (!intro || intro.classList.contains('hidden')) return;
+
+    ctx.fillStyle = 'rgba(5,0,16,0.15)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Nebula blobs
+    nebulae.forEach((n, i) => {
+      const shiftX = Math.sin(frame * 0.003 + i) * 30;
+      const shiftY = Math.cos(frame * 0.002 + i * 2) * 20;
+      const grad = ctx.createRadialGradient(n.x + shiftX, n.y + shiftY, 0, n.x + shiftX, n.y + shiftY, n.r);
+      grad.addColorStop(0, `hsla(${n.hue + Math.sin(frame * 0.005) * 15},80%,40%,0.03)`);
+      grad.addColorStop(0.5, `hsla(${n.hue},60%,30%,0.015)`);
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    });
+
+    // Stars
+    stars.forEach(s => {
+      s.alpha += s.da;
+      if (s.alpha <= 0.1 || s.alpha >= 1) s.da *= -1;
+      s.y += s.drift;
+      if (s.y > canvas.height + 5) { s.y = -5; s.x = Math.random() * canvas.width; }
+
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,220,240,${Math.abs(s.alpha)})`;
+      ctx.fill();
+
+      if (s.r > 1.5) {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r * 3, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,180,220,${Math.abs(s.alpha) * 0.15})`;
+        ctx.fill();
+      }
+    });
+
+    frame++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ===== INTRO PETALS =====
+function generateIntroPetals(count) {
+  const container = document.getElementById('introPetals');
+  if (!container) return;
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.className = 'petal';
+    p.style.cssText = `
+      left:${Math.random() * 100}%;
+      --dur:${6 + Math.random() * 8}s;
+      --delay:${Math.random() * 6}s;
+      --rot:${Math.random() * 360}deg;
+      --sway:${Math.random() * 80 - 40}px;
+    `;
+    container.appendChild(p);
+  }
+}
+
+// ===== LOADING SCREEN (extracted) =====
+function startLoadingScreen() {
   const loadingScreen = document.getElementById('loadingScreen');
   const loadingRingFill = document.getElementById('loadingRingFill');
-  const loadingTexts = ['Loading your surprises', 'Preparing the magic', 'Gathering love', 'Almost ready'];
+  const loadingTexts = ['Loading your surprises', 'Preparing the magic', 'Gathering all my love', 'Wrapping your gifts', 'Sprinkling stardust', 'Almost ready, Saba...'];
   const loadingTextEl = document.getElementById('loadingText');
   let ltIdx = 0;
 
-  // Show loading screen right away
   loadingScreen.classList.remove('hidden');
+  initLoadingNebula();
   requestAnimationFrame(() => {
     loadingRingFill.style.strokeDashoffset = '0';
   });
@@ -48,7 +332,7 @@ const FIXED_NAME = 'saba';
   const ltInterval = setInterval(() => {
     ltIdx = (ltIdx + 1) % loadingTexts.length;
     loadingTextEl.textContent = loadingTexts[ltIdx];
-  }, 600);
+  }, 500);
 
   setTimeout(() => {
     clearInterval(ltInterval);
@@ -61,24 +345,27 @@ const FIXED_NAME = 'saba';
       loadingScreen.style.cssText = '';
       screenMain.classList.remove('hidden');
       screenMain.style.animation = 'fadeInUp 0.6s ease both';
+      initMainNebula();
       initParticles();
       initScrollReveal();
+      initParallaxLayers();
+      initPetalRain();
+      initSectionDots();
       runCountdown(FIXED_NAME);
     }, 600);
-  }, 2200);
-})();
-
-// (Song visualizer removed)
+  }, 2500);
+}
 
 // ===== SCROLL REVEAL =====
 function initScrollReveal() {
-  const sections = document.querySelectorAll('.love-section, .constellation-section, .promise-section, .cake-section, .letter-section, .scratch-section, .wishes-section, .trivia-section, .memory-section, .cannon-section, .polaroid-section, .jar-section, .age-section, .zodiac-section, .countdown-section, .lovemeter-section, .fortune-section, .wishjar-section, .iloveyou-section, .heartbeat-section, .particle-heart-section, .infinity-section, .final-section');
+  const sections = document.querySelectorAll('.love-section, .constellation-section, .promise-section, .cake-section, .letter-section, .scratch-section, .wishes-section, .trivia-section, .memory-section, .cannon-section, .polaroid-section, .jar-section, .countdown-section, .lovemeter-section, .fortune-section, .wishjar-section, .iloveyou-section, .heartbeat-section, .particle-heart-section, .infinity-section, .final-section');
   sections.forEach(s => s.classList.add('reveal-on-scroll'));
 
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         entry.target.classList.add('revealed');
+        SFX.play('whoosh');
         // Auto confetti + butterflies when final section appears
         if (entry.target.id === 'finalSection') {
           launchConfetti(100);
@@ -166,6 +453,8 @@ function runCountdown(name) {
       initHeartBeatSync(name);
       initShootingStars();
       initFinalFloatingHearts();
+      initSecretTrigger();
+      init3DTilt();
       document.getElementById('currentYear').textContent = new Date().getFullYear();
 
       // Autoplay Heeriye! 🎶
@@ -289,15 +578,16 @@ const particlesEl = document.getElementById('particles');
 const pColors = ['#ff6eb4', '#ffd700', '#e8a87c', '#a855f7', '#f7cac9', '#ff2d75'];
 
 function initParticles() {
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 60; i++) {
     const p = document.createElement('div');
     p.className = 'particle';
-    const size = Math.random() * 10 + 3;
+    const size = Math.random() * 12 + 3;
     p.style.cssText = `
       width:${size}px;height:${size}px;
       background:${pColors[Math.floor(Math.random() * pColors.length)]};
       left:${Math.random() * 100}%;
       border-radius:50%;
+      box-shadow:0 0 ${size * 2}px ${pColors[Math.floor(Math.random() * pColors.length)]};
       --dur:${Math.random() * 14 + 6}s;
       --delay:${Math.random() * 8}s;
     `;
@@ -330,6 +620,7 @@ function blowAllCandles() {
   const flames = document.querySelectorAll('.flame:not(.blown)');
   if (flames.length === 0) return;
   haptic(60);
+  SFX.play('blow');
   flames.forEach((f, i) => setTimeout(() => {
     f.classList.add('blown');
     createSmoke(f);
@@ -979,6 +1270,7 @@ function initHeartAssembleCanvas(heartGate, letterPaper, onOpenCallback) {
     heartGate.removeEventListener('click', onTap);
     tapped = true;
     haptic(80);
+    SFX.play('letterOpen');
 
     explodeTime = performance.now();
     particles.forEach(p => {
@@ -1021,6 +1313,7 @@ function updateAgeFun() {
   const display = document.getElementById('ageDisplay');
   const fun = document.getElementById('ageFun');
   const cands = document.getElementById('ageCandles');
+  if (!display || !fun || !cands) return;
   display.textContent = age;
   display.classList.remove('pop'); void display.offsetWidth; display.classList.add('pop');
   fun.textContent = getFact(age);
@@ -1039,8 +1332,10 @@ function updateAgeFun() {
   }
 }
 
-document.getElementById('ageUp').addEventListener('click', () => { if (age < 120) { age++; updateAgeFun(); } });
-document.getElementById('ageDown').addEventListener('click', () => { if (age > 1) { age--; updateAgeFun(); } });
+const ageUpBtn = document.getElementById('ageUp');
+const ageDownBtn = document.getElementById('ageDown');
+if (ageUpBtn) ageUpBtn.addEventListener('click', () => { if (age < 120) { age++; updateAgeFun(); } });
+if (ageDownBtn) ageDownBtn.addEventListener('click', () => { if (age > 1) { age--; updateAgeFun(); } });
 
 // ===== ROTATING WORDS =====
 function startRotatingWords() {
@@ -1101,6 +1396,7 @@ function animateFireworks() {
 animateFireworks();
 
 function burstFireworks(count = 5) {
+  SFX.play('celebration');
   for (let i = 0; i < count; i++) {
     setTimeout(() => createFirework(canvas.width * (0.1 + Math.random() * 0.8), canvas.height * (0.1 + Math.random() * 0.5)), i * 250);
   }
@@ -1119,6 +1415,7 @@ function startFireworks() {
 const confettiColors = ['#ff6eb4', '#ffd700', '#ff2d75', '#a855f7', '#e8a87c', '#f7cac9', '#f43f5e'];
 
 function launchConfetti(total = 150) {
+  SFX.play('chime');
   for (let i = 0; i < total; i++) {
     setTimeout(() => {
       const c = document.createElement('div'); c.className = 'confetti';
@@ -1157,19 +1454,13 @@ const music = document.getElementById('bgMusic');
 const toggleBtn = document.getElementById('musicToggle');
 let playing = false;
 
-// Limit music to 30 seconds then loop back
-const MUSIC_DURATION = 30; // seconds
-
+// Play full song (no limit) with progress ring
 function setupMusicLoop() {
   const musicRingFill = document.getElementById('musicRingFill');
   const circumference = 2 * Math.PI * 24; // r=24
   music.addEventListener('timeupdate', () => {
-    if (music.currentTime >= MUSIC_DURATION) {
-      music.currentTime = 0;
-    }
-    // Update progress ring
-    if (musicRingFill) {
-      const progress = music.currentTime / MUSIC_DURATION;
+    if (musicRingFill && music.duration) {
+      const progress = music.currentTime / music.duration;
       musicRingFill.style.strokeDashoffset = circumference * (1 - progress);
     }
   });
@@ -1218,7 +1509,7 @@ toggleBtn.addEventListener('click', (e) => {
 // ===== WHATSAPP SHARE =====
 document.getElementById('whatsappBtn').addEventListener('click', () => {
   const name = document.getElementById('megaTitle').textContent.replace('Happy Birthday, ', '').replace('!', '');
-  const msg = `💕🎂 *Happy Birthday, ${name}!* 🎂💕\n\n🌹 To the most amazing person I know...\n\n💖 May this year bring you endless happiness, beautiful adventures, and all the love your heart can hold!\n\n✨ You make my world brighter just by being in it.\n\n🥰 Happy Birthday, my love! 💕\n\n🎁 Sent with all my love`;
+  const msg = `💕🎂 *Happy Birthday, ${name}!* 🎂💕\n\n🌹 To the most special person in my life...\n\n✨ On your birthday, I want you to know that you are the most beautiful soul I've ever known. Every moment with you is a gift.\n\n💖 May this year bring you:\n🌸 Endless love\n🌟 Beautiful surprises\n🦋 Dreams coming true\n🌈 Happiness in every moment\n\n💝 I love you more than words can say, ${name}.\nHappy Birthday, my love! 🥰\n\n— Made with all my love 💕`;
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
   launchConfetti(80);
   showToast('💬 Opening WhatsApp...');
@@ -1364,8 +1655,7 @@ function initConstellation(name) {
   }, { passive: false });
 
   function drawConst() {
-    cCtx.fillStyle = 'rgba(5,0,16,0.2)';
-    cCtx.fillRect(0, 0, W, H);
+    cCtx.clearRect(0, 0, W, H);
 
     // Background stars
     bgStars.forEach(s => {
@@ -1473,6 +1763,7 @@ function buildPromiseCards(name) {
     card.addEventListener('click', () => {
       card.classList.toggle('flipped');
       haptic();
+      SFX.play('pop');
       launchSparks(
         card.getBoundingClientRect().left + card.getBoundingClientRect().width / 2,
         card.getBoundingClientRect().top + card.getBoundingClientRect().height / 2,
@@ -1522,8 +1813,10 @@ function initScratchCard() {
   let isScratching = false;
   let scratchedPixels = 0;
   const totalPixels = canvas.width * canvas.height;
+  let scratchSfxCounter = 0;
 
   function scratch(x, y) {
+    if (++scratchSfxCounter % 5 === 0) SFX.play('scratch');
     ctx.globalCompositeOperation = 'destination-out';
     ctx.beginPath();
     ctx.arc(x, y, 25, 0, Math.PI * 2);
@@ -1621,8 +1914,8 @@ function initParticleHeart() {
 
   const particles = [];
   const heartPoints = [];
-  const cx = W / 2, cy = H / 2 - 10;
-  const scale = Math.min(W, H) / 25;
+  const cx = W / 2, cy = H / 2 + 10;
+  const scale = Math.min(W, H) / 30;
 
   // Heart parametric equation
   for (let angle = 0; angle < Math.PI * 2; angle += 0.05) {
@@ -1653,8 +1946,7 @@ function initParticleHeart() {
   let animating = false;
 
   function drawParticleHeart() {
-    ctx.fillStyle = 'rgba(5,0,16,0.15)';
-    ctx.fillRect(0, 0, W, H);
+    ctx.clearRect(0, 0, W, H);
 
     particles.forEach(p => {
       if (!p.arrived) {
@@ -1796,6 +2088,7 @@ function initFortuneBall(name) {
 
     ball.classList.add('shake');
     haptic(50);
+    SFX.play('pop');
 
     setTimeout(() => {
       ball.classList.remove('shake');
@@ -1969,9 +2262,11 @@ function buildTriviaQuiz(name) {
       btn.addEventListener('click', () => {
         if (btn.classList.contains('disabled')) return;
         optionsDiv.querySelectorAll('.trivia-option').forEach(b => b.classList.add('disabled'));
+        SFX.play('pop');
         if (oi === qObj.correct) {
           btn.classList.add('correct');
           score++;
+          SFX.play('ding');
           launchConfetti(60);
           haptic(50);
         } else {
@@ -2019,6 +2314,7 @@ function initConfettiCannon() {
     cooling = true;
     btn.classList.add('cooldown');
     haptic(100);
+    SFX.play('pop');
 
     // MEGA celebration!
     launchConfetti(300);
@@ -2175,19 +2471,38 @@ function buildZodiac() {
   }
 }
 
-// ===== V2: BIRTHDAY COUNTDOWN =====
+// ===== V2: BIRTHDAY COUNTDOWN (June 10) =====
 function initBirthdayCountdown() {
   const daysEl = document.getElementById('cdDays');
   const hoursEl = document.getElementById('cdHours');
   const minsEl = document.getElementById('cdMins');
   const secsEl = document.getElementById('cdSecs');
+  const msgEl = document.querySelector('.countdown-msg');
+  const labelEl = document.querySelector('#countdownSection .section-label');
   if (!daysEl) return;
+
+  const BDAY_MONTH = 5; // June (0-indexed)
+  const BDAY_DAY = 19;
 
   function update() {
     const now = new Date();
-    let nextBday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-    // Set next birthday as exactly 365 days from today (since we don't know actual date)
-    nextBday = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+
+    // Check if today IS the birthday
+    if (now.getMonth() === BDAY_MONTH && now.getDate() === BDAY_DAY) {
+      daysEl.textContent = '🎂';
+      hoursEl.textContent = '🎉';
+      minsEl.textContent = '💕';
+      secsEl.textContent = '✨';
+      document.querySelectorAll('.cd-label').forEach(l => l.style.display = 'none');
+      document.querySelectorAll('.cd-sep').forEach(s => s.style.display = 'none');
+      if (labelEl) labelEl.innerHTML = '<span class="label-icon">🎂</span> IT\'S YOUR BIRTHDAY TODAY!';
+      if (msgEl) msgEl.textContent = 'Happy Birthday, Saba! Today is YOUR day! 🎉💕';
+      return;
+    }
+
+    // Calculate next birthday
+    let nextBday = new Date(now.getFullYear(), BDAY_MONTH, BDAY_DAY);
+    if (now > nextBday) nextBday = new Date(now.getFullYear() + 1, BDAY_MONTH, BDAY_DAY);
 
     const diff = nextBday - now;
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -2199,6 +2514,11 @@ function initBirthdayCountdown() {
     hoursEl.textContent = String(hours).padStart(2, '0');
     minsEl.textContent = String(mins).padStart(2, '0');
     secsEl.textContent = String(secs).padStart(2, '0');
+
+    if (days <= 1) { if (msgEl) msgEl.textContent = 'TOMORROW! The wait is almost over! 🎉💕'; }
+    else if (days <= 3) { if (msgEl) msgEl.textContent = 'Almost here! The excitement is building! 🎉'; }
+    else if (days <= 7) { if (msgEl) msgEl.textContent = 'Less than a week! Can you feel the excitement? ✨'; }
+    else if (days <= 30) { if (msgEl) msgEl.textContent = 'Getting closer every second! 💕'; }
   }
 
   update();
@@ -2250,6 +2570,7 @@ function initWishJar(name) {
     // Shake animation
     wrap.classList.add('shaking');
     haptic(80);
+    SFX.play('pop');
     setTimeout(() => wrap.classList.remove('shaking'), 600);
 
     setTimeout(() => {
@@ -2285,6 +2606,7 @@ function initHeartBeatSync(name) {
   const obs = new IntersectionObserver((entries) => {
     if (entries[0].isIntersecting && !running) {
       running = true;
+      SFX.play('heartbeat');
       let bpm = 0;
       const target = 143; // "I Love You" = 143
       const interval = setInterval(() => {
@@ -2338,6 +2660,60 @@ function initFinalFloatingHearts() {
   }
 }
 
+// ===== FLOATING PETAL RAIN (always on, subtle) =====
+function initPetalRain() {
+  const container = document.getElementById('petalRainBg');
+  if (!container) return;
+  for (let i = 0; i < 25; i++) {
+    const p = document.createElement('div');
+    p.className = 'bg-petal';
+    p.style.cssText = `
+      left:${Math.random() * 100}%;
+      --dur:${8 + Math.random() * 10}s;
+      --delay:${Math.random() * 8}s;
+      --rot:${Math.random() * 360}deg;
+      --sway:${Math.random() * 100 - 50}px;
+    `;
+    container.appendChild(p);
+  }
+}
+
+// ===== SECTION NAVIGATION DOTS =====
+function initSectionDots() {
+  const dotsContainer = document.getElementById('sectionDots');
+  if (!dotsContainer) return;
+
+  const sections = document.querySelectorAll('.main-scroll > section');
+  sections.forEach((section, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'section-dot';
+    const label = section.querySelector('.section-label');
+    dot.title = label ? label.textContent.trim() : `Section ${i + 1}`;
+    dot.addEventListener('click', () => {
+      section.scrollIntoView({ behavior: 'smooth' });
+    });
+    dotsContainer.appendChild(dot);
+  });
+
+  let dotsVisible = false;
+  const mainScroll = document.getElementById('mainScroll');
+
+  function updateDots() {
+    if (!dotsVisible && window.scrollY > 300) {
+      dotsContainer.classList.add('visible');
+      dotsVisible = true;
+    }
+    const dots = dotsContainer.querySelectorAll('.section-dot');
+    sections.forEach((section, i) => {
+      const rect = section.getBoundingClientRect();
+      const inView = rect.top < window.innerHeight / 2 && rect.bottom > window.innerHeight / 2;
+      if (dots[i]) dots[i].classList.toggle('active', inView);
+    });
+  }
+
+  window.addEventListener('scroll', updateDots, { passive: true });
+}
+
 // ===== V2: POLAROID DOUBLE-TAP HEART =====
 (function() {
   let lastPolaroidTap = 0;
@@ -2360,3 +2736,513 @@ function initFinalFloatingHearts() {
     lastPolaroidTap = now;
   });
 })();
+
+// ===== SECRET SURPRISE PAGE =====
+function initSecretTrigger() {
+  const trigger = document.getElementById('secretTrigger');
+  const overlay = document.getElementById('secretOverlay');
+  const closeBtn = document.getElementById('secretClose');
+  if (!trigger || !overlay) return;
+
+  // Show after 3s
+  setTimeout(() => trigger.classList.add('visible'), 3000);
+
+  trigger.addEventListener('click', () => {
+    overlay.classList.remove('hidden');
+    overlay.style.animation = 'secretFadeIn 0.5s ease both';
+    haptic(30);
+    SFX.play('pop');
+    initSecretPasswordInput();
+    const firstPin = overlay.querySelector('.pin-input');
+    if (firstPin) setTimeout(() => firstPin.focus(), 300);
+  });
+
+  closeBtn.addEventListener('click', () => {
+    overlay.style.animation = 'secretFadeOut 0.4s ease both';
+    setTimeout(() => {
+      overlay.classList.add('hidden');
+      overlay.style.animation = '';
+    }, 400);
+  });
+}
+
+function initSecretPasswordInput() {
+  const pins = document.querySelectorAll('.pin-input');
+  const SECRET = '190604';
+  let initialized = false;
+
+  // Prevent re-initialization
+  if (pins[0].dataset.init) return;
+  pins[0].dataset.init = '1';
+
+  pins.forEach((input, i) => {
+    input.addEventListener('input', (e) => {
+      const val = e.target.value.replace(/\D/g, '');
+      e.target.value = val.slice(0, 1);
+      if (val && i < pins.length - 1) {
+        pins[i + 1].focus();
+      }
+      // Check if all filled
+      const code = Array.from(pins).map(p => p.value).join('');
+      if (code.length === 6) {
+        if (code === SECRET) {
+          onSecretUnlock();
+        } else {
+          onSecretWrong();
+        }
+      }
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !e.target.value && i > 0) {
+        pins[i - 1].focus();
+        pins[i - 1].value = '';
+      }
+    });
+
+    // Handle paste
+    input.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const pasted = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 6);
+      pasted.split('').forEach((ch, idx) => {
+        if (pins[idx]) pins[idx].value = ch;
+      });
+      if (pasted.length > 0) pins[Math.min(pasted.length, 5)].focus();
+      const code = Array.from(pins).map(p => p.value).join('');
+      if (code.length === 6) {
+        if (code === SECRET) onSecretUnlock();
+        else onSecretWrong();
+      }
+    });
+  });
+}
+
+function onSecretUnlock() {
+  const gate = document.getElementById('secretGate');
+  const content = document.getElementById('secretContent');
+  const lockAnim = document.getElementById('secretLockAnim');
+
+  // Lock → unlock animation
+  lockAnim.textContent = '🔓';
+  lockAnim.classList.add('unlocked');
+  haptic(100);
+  SFX.play('celebration');
+  launchConfetti(200);
+  burstFireworks(8);
+
+  setTimeout(() => {
+    gate.style.animation = 'secretSlideUp 0.6s ease both';
+    setTimeout(() => {
+      gate.classList.add('hidden');
+      content.classList.remove('hidden');
+      content.style.animation = 'secretFadeIn 0.8s ease both';
+      initGiftBox();
+      initSecretLetter();
+      initCouponBook();
+    }, 600);
+  }, 800);
+}
+
+function onSecretWrong() {
+  const pinContainer = document.getElementById('secretPin');
+  const errorEl = document.getElementById('secretError');
+  const pins = document.querySelectorAll('.pin-input');
+
+  pinContainer.classList.add('shake');
+  errorEl.classList.remove('hidden');
+  haptic(80);
+
+  setTimeout(() => {
+    pinContainer.classList.remove('shake');
+    pins.forEach(p => p.value = '');
+    pins[0].focus();
+  }, 600);
+
+  setTimeout(() => errorEl.classList.add('hidden'), 3000);
+}
+
+function initGiftBox() {
+  const box = document.getElementById('giftBox');
+  const lid = document.getElementById('giftLid');
+  const hint = document.getElementById('giftTapHint');
+  const msg = document.getElementById('giftMessage');
+  if (!box) return;
+  let opened = false;
+
+  box.addEventListener('click', () => {
+    if (opened) return;
+    opened = true;
+    lid.classList.add('gift-lid-open');
+    hint.style.opacity = '0';
+    haptic(80);
+    SFX.play('celebration');
+
+    // Sparks burst from gift
+    const rect = box.getBoundingClientRect();
+    launchSparks(rect.left + rect.width / 2, rect.top, 30);
+    launchConfetti(100);
+
+    setTimeout(() => {
+      msg.classList.remove('hidden');
+      msg.style.animation = 'secretFadeIn 0.8s ease both';
+    }, 800);
+  });
+}
+
+function initSecretLetter() {
+  const body = document.getElementById('secretLetterBody');
+  if (!body) return;
+
+  const text = `There are things I've never said out loud — not because I don't feel them, but because words seem too small for what you mean to me.\n\nYou are the calm in my chaos, the light in my darkness, and the reason I believe in forever. Every time I see you smile, I fall in love all over again.\n\nI want you to know that no matter where life takes us, my heart will always find its way back to you. You are my home, my safe place, my everything.\n\nOn this special day, I don't just wish you happiness — I promise to spend every day making sure you feel as loved as you make me feel.\n\nHappy Birthday, my love. Here's to us, to forever, and to a million more birthdays together. 💕`;
+
+  const obs = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) {
+      obs.disconnect();
+      let i = 0;
+      body.textContent = '';
+      function typeChar() {
+        if (i < text.length) {
+          body.textContent += text.charAt(i);
+          i++;
+          setTimeout(typeChar, text.charAt(i - 1) === '\n' ? 150 : 20);
+        } else {
+          body.classList.add('done');
+        }
+      }
+      typeChar();
+    }
+  }, { threshold: 0.15 });
+  obs.observe(body.parentElement);
+}
+
+function initCouponBook() {
+  const grid = document.getElementById('couponGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  const coupons = [
+    { emoji: '🤗', title: 'Free Hug', desc: 'Redeemable anytime, anywhere. No expiry!' },
+    { emoji: '🎬', title: 'Movie Night', desc: 'Your pick! Popcorn & snuggles included.' },
+    { emoji: '🍳', title: 'Breakfast in Bed', desc: 'Wake up to your favorite breakfast, made with love.' },
+    { emoji: '💋', title: 'Unlimited Kisses', desc: 'Valid for 24 hours of nonstop kisses!' },
+    { emoji: '🌙', title: 'Surprise Date Night', desc: 'A mystery date planned just for you.' },
+    { emoji: '⭐', title: '1 Wish — Anything', desc: 'Your wish is my command. No questions asked!' },
+  ];
+
+  coupons.forEach((c, i) => {
+    const card = document.createElement('div');
+    card.className = 'coupon-card tilt-3d';
+    card.innerHTML = `
+      <div class="coupon-inner">
+        <div class="coupon-front">
+          <span class="coupon-emoji">${c.emoji}</span>
+          <span class="coupon-title">${c.title}</span>
+          <span class="coupon-tap">Tap to reveal</span>
+        </div>
+        <div class="coupon-back">
+          <span class="coupon-back-emoji">${c.emoji}</span>
+          <p class="coupon-back-title">${c.title}</p>
+          <p class="coupon-back-desc">${c.desc}</p>
+          <span class="coupon-valid">✓ Valid Forever</span>
+        </div>
+      </div>
+    `;
+    card.addEventListener('click', () => {
+      card.classList.toggle('flipped');
+      haptic(30);
+      SFX.play('pop');
+    });
+    grid.appendChild(card);
+  });
+}
+
+// ===== 3D CARD TILT EFFECT (Apple-style) =====
+function init3DTilt() {
+  const elements = document.querySelectorAll('.love-card, .wish-card, .polaroid-card, .memory-card, .trivia-card, .coupon-card');
+  elements.forEach(el => el.classList.add('tilt-3d'));
+
+  // Apply tilt behavior
+  document.querySelectorAll('.tilt-3d').forEach(el => {
+    // Skip promise cards (they flip)
+    if (el.closest('.promise-card')) return;
+
+    let currentX = 0, currentY = 0, targetX = 0, targetY = 0;
+    let animating = false;
+
+    // Create glare overlay
+    const glare = document.createElement('div');
+    glare.className = 'tilt-glare';
+    el.appendChild(glare);
+
+    function lerp(start, end, factor) { return start + (end - start) * factor; }
+
+    function animate() {
+      currentX = lerp(currentX, targetX, 0.1);
+      currentY = lerp(currentY, targetY, 0.1);
+
+      el.style.transform = `perspective(800px) rotateX(${currentY}deg) rotateY(${currentX}deg) scale3d(1.02,1.02,1.02)`;
+
+      // Glare follows cursor
+      const glareX = 50 + (currentX / 15) * 50;
+      const glareY = 50 - (currentY / 15) * 50;
+      glare.style.background = `radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255,255,255,0.15), transparent 60%)`;
+
+      if (Math.abs(currentX - targetX) > 0.01 || Math.abs(currentY - targetY) > 0.01) {
+        requestAnimationFrame(animate);
+      } else {
+        animating = false;
+      }
+    }
+
+    function startAnim() {
+      if (!animating) {
+        animating = true;
+        animate();
+      }
+    }
+
+    el.addEventListener('mousemove', (e) => {
+      const rect = el.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+      targetX = (x - 0.5) * 15;
+      targetY = -(y - 0.5) * 15;
+      startAnim();
+    });
+
+    el.addEventListener('mouseleave', () => {
+      targetX = 0;
+      targetY = 0;
+      startAnim();
+      glare.style.background = 'transparent';
+    });
+
+    // Touch support
+    el.addEventListener('touchmove', (e) => {
+      const touch = e.touches[0];
+      const rect = el.getBoundingClientRect();
+      const x = (touch.clientX - rect.left) / rect.width;
+      const y = (touch.clientY - rect.top) / rect.height;
+      targetX = (x - 0.5) * 15;
+      targetY = -(y - 0.5) * 15;
+      startAnim();
+    }, { passive: true });
+
+    el.addEventListener('touchend', () => {
+      targetX = 0;
+      targetY = 0;
+      startAnim();
+      glare.style.background = 'transparent';
+    });
+  });
+}
+
+// ===== PARALLAX SCROLLING =====
+function initParallaxLayers() {
+  const meshBg = document.getElementById('meshBg');
+  const petalRainBg = document.getElementById('petalRainBg');
+  const particles = document.getElementById('particles');
+  const heroCircles = document.querySelector('.hero-bg-circles');
+  const cakeGlow = document.querySelector('.cake-glow');
+
+  let ticking = false;
+
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      const scrollY = window.scrollY || window.pageYOffset;
+      if (meshBg) meshBg.style.transform = `translateY(${scrollY * 0.3}px)`;
+      if (petalRainBg) petalRainBg.style.transform = `translateY(${scrollY * 0.15}px)`;
+      if (particles) particles.style.transform = `translateY(${scrollY * 0.2}px)`;
+      if (heroCircles) heroCircles.style.transform = `translateY(${scrollY * 0.1}px)`;
+      if (cakeGlow) cakeGlow.style.transform = `translate(-50%,-50%) translateY(${scrollY * 0.25}px)`;
+      ticking = false;
+    });
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+}
+
+// ===== LOADING SCREEN NEBULA BACKGROUND =====
+function initLoadingNebula() {
+  const canvas = document.getElementById('loadingNebulaCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+  ctx.scale(dpr, dpr);
+  const W = window.innerWidth, H = window.innerHeight;
+
+  // Floating particles
+  const dots = [];
+  for (let i = 0; i < 60; i++) {
+    dots.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 2.5 + 0.5,
+      vy: 0.3 + Math.random() * 1.2,
+      vx: (Math.random() - 0.5) * 0.3,
+      alpha: Math.random() * 0.6 + 0.2,
+      hue: Math.random() > 0.5 ? 330 + Math.random() * 30 : 270 + Math.random() * 30,
+      glow: Math.random() > 0.6,
+      trail: Math.random() * 40 + 10,
+    });
+  }
+
+  let running = true;
+
+  function draw() {
+    if (!running) return;
+    ctx.fillStyle = 'rgba(5,0,16,0.12)';
+    ctx.fillRect(0, 0, W, H);
+
+    // Pink nebula glow
+    const grd = ctx.createRadialGradient(W * 0.65, H * 0.3, 0, W * 0.65, H * 0.3, W * 0.45);
+    grd.addColorStop(0, 'rgba(120,20,80,0.04)');
+    grd.addColorStop(1, 'transparent');
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, W, H);
+
+    dots.forEach(d => {
+      d.y += d.vy;
+      d.x += d.vx;
+      if (d.y > H + 10) { d.y = -10; d.x = Math.random() * W; }
+      if (d.x < -10) d.x = W + 10;
+      if (d.x > W + 10) d.x = -10;
+
+      // Trail
+      if (d.glow) {
+        ctx.beginPath();
+        ctx.moveTo(d.x, d.y);
+        ctx.lineTo(d.x - d.vx * 2, d.y - d.trail);
+        ctx.strokeStyle = `hsla(${d.hue},60%,70%,${d.alpha * 0.15})`;
+        ctx.lineWidth = d.r * 0.8;
+        ctx.stroke();
+      }
+
+      // Outer glow
+      if (d.glow) {
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.r * 4, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${d.hue},70%,65%,${d.alpha * 0.12})`;
+        ctx.fill();
+      }
+
+      // Dot
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${d.hue},70%,80%,${d.alpha})`;
+      ctx.fill();
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  draw();
+
+  // Stop when loading screen is hidden
+  const observer = new MutationObserver(() => {
+    if (canvas.parentElement && canvas.parentElement.classList.contains('hidden')) {
+      running = false;
+      observer.disconnect();
+    }
+  });
+  if (canvas.parentElement) {
+    observer.observe(canvas.parentElement, { attributes: true, attributeFilter: ['class'] });
+  }
+}
+
+// ===== MAIN PAGE NEBULA BACKGROUND =====
+function initMainNebula() {
+  const canvas = document.getElementById('mainNebulaCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+
+  function resize() {
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    ctx.scale(dpr, dpr);
+  }
+  resize();
+
+  const W = () => window.innerWidth;
+  const H = () => window.innerHeight;
+
+  const dots = [];
+  for (let i = 0; i < 70; i++) {
+    dots.push({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      r: Math.random() * 2.5 + 0.5,
+      vy: 0.2 + Math.random() * 1,
+      vx: (Math.random() - 0.5) * 0.3,
+      alpha: Math.random() * 0.5 + 0.15,
+      hue: Math.random() > 0.5 ? 330 + Math.random() * 30 : 270 + Math.random() * 30,
+      glow: Math.random() > 0.55,
+      trail: Math.random() * 40 + 10,
+    });
+  }
+
+  // Paint initial dark background immediately
+  ctx.fillStyle = '#050010';
+  ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+
+  function draw() {
+    const w = W(), h = H();
+    ctx.fillStyle = 'rgba(5,0,16,0.12)';
+    ctx.fillRect(0, 0, w, h);
+
+    // Nebula glow 1 (top-right pink)
+    const grd = ctx.createRadialGradient(w * 0.7, h * 0.25, 0, w * 0.7, h * 0.25, w * 0.5);
+    grd.addColorStop(0, 'rgba(120,20,80,0.04)');
+    grd.addColorStop(1, 'transparent');
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, w, h);
+
+    // Nebula glow 2 (bottom-left purple)
+    const grd2 = ctx.createRadialGradient(w * 0.2, h * 0.75, 0, w * 0.2, h * 0.75, w * 0.4);
+    grd2.addColorStop(0, 'rgba(80,20,120,0.03)');
+    grd2.addColorStop(1, 'transparent');
+    ctx.fillStyle = grd2;
+    ctx.fillRect(0, 0, w, h);
+
+    dots.forEach(d => {
+      d.y += d.vy;
+      d.x += d.vx;
+      if (d.y > h + 10) { d.y = -10; d.x = Math.random() * w; }
+      if (d.x < -10) d.x = w + 10;
+      if (d.x > w + 10) d.x = -10;
+
+      // Trail
+      if (d.glow) {
+        ctx.beginPath();
+        ctx.moveTo(d.x, d.y);
+        ctx.lineTo(d.x - d.vx * 2, d.y - d.trail);
+        ctx.strokeStyle = `hsla(${d.hue},60%,70%,${d.alpha * 0.12})`;
+        ctx.lineWidth = d.r * 0.8;
+        ctx.stroke();
+      }
+
+      // Outer glow
+      if (d.glow) {
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.r * 4, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${d.hue},70%,65%,${d.alpha * 0.1})`;
+        ctx.fill();
+      }
+
+      // Dot
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${d.hue},70%,80%,${d.alpha})`;
+      ctx.fill();
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  draw();
+}
