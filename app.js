@@ -1,6 +1,6 @@
 /* =============================================
    BIRTHDAY WISHES — Romantic Premium Edition
-   Name "saba" is hardcoded
+   Name "Najiya" is hardcoded
    ============================================= */
 
 // ===== SOUND EFFECTS (Web Audio API — no external files) =====
@@ -149,9 +149,9 @@ if (window.matchMedia('(hover: hover)').matches) {
   });
 }
 
-// ===== AUTO-START WITH NAME "saba" =====
+// ===== AUTO-START WITH NAME "Najiya" =====
 const screenMain = document.getElementById('screenMain');
-const FIXED_NAME = 'saba';
+const FIXED_NAME = 'Najiya';
 
 // ===== CINEMATIC INTRO =====
 (function cinematicIntro() {
@@ -169,7 +169,7 @@ const FIXED_NAME = 'saba';
   generateIntroPetals(20);
 
   // 3. Typewriter intro text
-  const messages = ['Something special is waiting...', 'Just for you, Saba...'];
+  const messages = ['Something special is waiting...', 'Just for you, Najiya...'];
   let msgIdx = 0, charIdx = 0;
   introTextEl.textContent = '';
 
@@ -319,7 +319,7 @@ function generateIntroPetals(count) {
 function startLoadingScreen() {
   const loadingScreen = document.getElementById('loadingScreen');
   const loadingRingFill = document.getElementById('loadingRingFill');
-  const loadingTexts = ['Loading your surprises', 'Preparing the magic', 'Gathering all my love', 'Wrapping your gifts', 'Sprinkling stardust', 'Almost ready, Saba...'];
+  const loadingTexts = ['Loading your surprises', 'Preparing the magic', 'Gathering all my love', 'Wrapping your gifts', 'Sprinkling stardust', 'Almost ready, Najiya...'];
   const loadingTextEl = document.getElementById('loadingText');
   let ltIdx = 0;
 
@@ -2496,7 +2496,7 @@ function initBirthdayCountdown() {
       document.querySelectorAll('.cd-label').forEach(l => l.style.display = 'none');
       document.querySelectorAll('.cd-sep').forEach(s => s.style.display = 'none');
       if (labelEl) labelEl.innerHTML = '<span class="label-icon">🎂</span> IT\'S YOUR BIRTHDAY TODAY!';
-      if (msgEl) msgEl.textContent = 'Happy Birthday, Saba! Today is YOUR day! 🎉💕';
+      if (msgEl) msgEl.textContent = 'Happy Birthday, Najiya! Today is YOUR day! 🎉💕';
       return;
     }
 
