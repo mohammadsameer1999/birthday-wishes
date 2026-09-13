@@ -2471,7 +2471,7 @@ function buildZodiac() {
   }
 }
 
-// ===== V2: BIRTHDAY COUNTDOWN (June 10) =====
+// ===== V2: BIRTHDAY COUNTDOWN (sept 14) =====
 function initBirthdayCountdown() {
   const daysEl = document.getElementById('cdDays');
   const hoursEl = document.getElementById('cdHours');
@@ -2481,8 +2481,8 @@ function initBirthdayCountdown() {
   const labelEl = document.querySelector('#countdownSection .section-label');
   if (!daysEl) return;
 
-  const BDAY_MONTH = 5; // June (0-indexed)
-  const BDAY_DAY = 19;
+  const BDAY_MONTH = 8; // June (0-indexed)
+  const BDAY_DAY = 14;
 
   function update() {
     const now = new Date();
